@@ -13,9 +13,14 @@ public class BoardMapper implements RowMapper<Board> {
 
         Board board = new Board();
 
-        board.setId(rs.getInt("boardIdx"));
-        board.setContents(rs.getString("boardContents"));
-        board.setDuration(rs.getInt("messageDuration"));
+        board.setBoardIdx(rs.getInt("boardIdx"));
+        board.setContent(rs.getString("boardContents"));
+        board.setMessageDuration(rs.getInt("messageDuration"));
+        board.setLocation(rs.getString("location"));
+        board.setIndicateLocation(rs.getString("indicatedLocation"));
+        board.setStatus(rs.getString("status"));
+        board.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
+        board.setUpdatedAt(rs.getTimestamp("updatedAt").toLocalDateTime());
 
         return board;
     }

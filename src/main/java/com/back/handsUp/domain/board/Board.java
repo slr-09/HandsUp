@@ -8,12 +8,21 @@ import java.time.LocalDateTime;
 
 @Data
 public class Board {
+
     @Id
-    public long id;
+    public long boardIdx;
 
-    @Column("boardContents")
-    public String contents;
+    public String content;
 
-    @Column("messageDuration")
-    public int duration;
+    public String location;
+
+    public String indicateLocation;
+
+    public int messageDuration;
+
+    public LocalDateTime createdAt;
+
+    public LocalDateTime updatedAt;
+
+    public String status;
 }
