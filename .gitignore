@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+###
+src/main/resources/firebase/handsup-c4213-firebase-adminsdk-cecbd-589582696c.json
