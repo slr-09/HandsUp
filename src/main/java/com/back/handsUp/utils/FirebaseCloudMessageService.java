@@ -20,6 +20,15 @@ public class FirebaseCloudMessageService {
 
     private final ObjectMapper objectMapper;
 
+
+    /**
+     * 알림 전송 메서드
+     * 알림 전송 필요 시 sendMessageTo(상대방 토큰, 알림 제목, 알림 내용) 호출해 사용
+     * @param targetToken
+     * @param title
+     * @param body
+     * @throws IOException
+     */
     public void sendMessageTo(String targetToken, String title, String body) throws IOException {
         String message = makeMessage(targetToken, title, body);
 
@@ -36,6 +45,8 @@ public class FirebaseCloudMessageService {
 
         System.out.println(response.body().string());
     }
+
+
 
     private String makeMessage(String targetToken, String title, String body) throws JsonProcessingException {
         FcmMessage fcmMessage = FcmMessage.builder()
