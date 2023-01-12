@@ -10,19 +10,19 @@ import java.time.LocalDateTime;
 public class Board {
 
     @Id
-    public long boardIdx;
+    private long boardIdx;
 
-    public String content;
+    private String content;
 
-    public String location;
+    private String location;
 
-    public String indicateLocation;
+    private String indicateLocation;
 
-    public int messageDuration;
+    private int messageDuration;
 
-    public LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
-    public LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
-    public String status;
+    private String status;
 }

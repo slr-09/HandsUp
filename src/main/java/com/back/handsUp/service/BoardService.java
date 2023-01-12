@@ -1,6 +1,7 @@
 package com.back.handsUp.service;
 
 import com.back.handsUp.domain.board.Board;
+import com.back.handsUp.domain.user.User;
 import com.back.handsUp.repository.BoardRepository;
 import com.back.handsUp.utils.FirebaseCloudMessageService;
 import lombok.extern.slf4j.Slf4j;

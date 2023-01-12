@@ -1,6 +1,7 @@
 package com.back.handsUp.repository;
 
 import com.back.handsUp.domain.board.Board;
+import com.back.handsUp.domain.user.User;
 import com.back.handsUp.mapper.BoardMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
