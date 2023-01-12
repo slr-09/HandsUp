@@ -6,10 +6,7 @@ import com.back.handsUp.service.BoardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequestMapping("/boards")
@@ -25,9 +22,14 @@ public class BoardController {
     }
 
     @GetMapping("/singleList/{boardIdx}")
-
     public BaseResponse<Board> BoardViewByIdx(@PathVariable("boardIdx") int boardIdx) {
         Board board = boardService.boardViewByIdx(boardIdx);
         return new BaseResponse<>(board);
+    }
+
+    @PostMapping("/like/{boardIdx}")
+    public BaseResponse<String> like(@PathVariable("boardIdx") int boardIdx, @RequestBody int userIdx) {
+        String str = "하트 누름";
+        return new BaseResponse<>(str);
     }
 }

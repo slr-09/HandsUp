@@ -1,4 +1,4 @@
 package com.back.handsUp.service;
 
-public class MemberService {
+public class UserService {
 }

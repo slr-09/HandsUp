@@ -23,4 +23,16 @@ public class BoardRepository {
         Board board = jdbcTemplate.queryForObject(sql, new Object[]{idx},new BoardMapper());
         return board;
     }
+
+    public User findUserByBoardIdx(int idx) {
+        String sql = "SELECT B.memberId FROM board B INNER JOIN member M ON B.memberId = M.memberId WHERE B.boardId = ?;";
+        User user = jdbcTemplate.queryForObject(sql, new RowMapper<User>(), idx);
+        return user;
+    }
+
+    public void likeBoard(int userIdx, int boardIdx) {
+        String sql = "INSERT INTO board_user(userIdx, boardIdx, status) VALUES (?,?,?);";
+        BoardUser boardUser = jdbcTemplate.update(sql, userIdx, boardIdx, "heart");
+    }
+
 }

@@ -1,4 +1,4 @@
 package com.back.handsUp.repository;
 
-public class MemberRepository {
+public class UserRepository {
 }
