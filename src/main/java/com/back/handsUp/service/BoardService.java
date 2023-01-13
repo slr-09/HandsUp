@@ -57,9 +57,11 @@ public class BoardService {
         if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLocation() == null){
             throw new BaseException(BaseResponseStatus.LOCATION_ERROR);
         }
+
         if(boardInfo.getMessageDuration()<1 || boardInfo.getMessageDuration()>48){
             throw new BaseException(BaseResponseStatus.MESSAGEDURATION_ERROR);
         }
+
         Board boardEntity = Board.builder()
                 .content(boardInfo.getContent())
                 .indicateLocation(boardInfo.getIndicateLocation())
@@ -72,6 +74,7 @@ public class BoardService {
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
         }
+
         Optional<User> optional = this.userRepository.findByUserIdx(userIdx);
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
@@ -95,13 +98,16 @@ public class BoardService {
         if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLocation() == null){
             throw new BaseException(BaseResponseStatus.LOCATION_ERROR);
         }
+
         if(boardInfo.getMessageDuration()<1 || boardInfo.getMessageDuration()>48){
             throw new BaseException(BaseResponseStatus.MESSAGEDURATION_ERROR);
         }
+
         Optional<Board> optional = this.boardRepository.findByBoardIdx(boardIdx);
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDIDX);
         }
+
         Board boardEntity = optional.get();
         boardEntity.changeBoard(boardInfo.getContent(), boardInfo.getLocation(), boardInfo.getIndicateLocation(), boardInfo.getMessageDuration());
         try{
@@ -109,6 +115,7 @@ public class BoardService {
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
         }
+
         List<BoardTag> boardTagEntityList = this.boardTagRepository.findAllByBoardIdx(boardEntity);
         for(BoardTag boardTag : boardTagEntityList){
             boardTag.changeStatus("INACTIVE");
@@ -124,35 +131,27 @@ public class BoardService {
         String[] tagNameList = boardInfo.getName().split("\\s");
         for(String tmp: tagNameList){
             Optional<Tag> tagEntity = this.tagRepository.findByName(tmp);
+            Tag targetTag;
+
             if(tagEntity.isEmpty()){
-                Tag newTagEntity = Tag.builder()
+                targetTag = Tag.builder()
                         .name(tmp)
                         .build();
-                this.tagRepository.save(newTagEntity);
-                Optional<BoardTag> optional = this.boardTagRepository.findByBoardIdxAndTagIdx(boardEntity, newTagEntity);
-                if(optional.isEmpty()){
-                    BoardTag boardTagEntity = BoardTag.builder()
-                            .boardIdx(boardEntity)
-                            .tagIdx(newTagEntity)
-                            .build();
-                    this.boardTagRepository.save(boardTagEntity);
-                } else{
-                    BoardTag boardTagEntity = optional.get();
-                    boardTagEntity.changeStatus("ACTIVE");
-                }
-
+                this.tagRepository.save(targetTag);
             } else {
-                Optional<BoardTag> optional = this.boardTagRepository.findByBoardIdxAndTagIdx(boardEntity, tagEntity.get());
-                if(optional.isEmpty()){
-                    BoardTag boardTagEntity = BoardTag.builder()
-                            .boardIdx(boardEntity)
-                            .tagIdx(tagEntity.get())
-                            .build();
-                    this.boardTagRepository.save(boardTagEntity);
-                } else{
-                    BoardTag boardTagEntity = optional.get();
-                    boardTagEntity.changeStatus("ACTIVE");
-                }
+               targetTag = tagEntity.get();
+            }
+
+            Optional<BoardTag> optional = this.boardTagRepository.findByBoardIdxAndTagIdx(boardEntity, targetTag);
+            if(optional.isEmpty()){
+                BoardTag boardTagEntity = BoardTag.builder()
+                        .boardIdx(boardEntity)
+                        .tagIdx(targetTag)
+                        .build();
+                this.boardTagRepository.save(boardTagEntity);
+            } else{
+                BoardTag boardTagEntity = optional.get();
+                boardTagEntity.changeStatus("ACTIVE");
             }
         }
     }
