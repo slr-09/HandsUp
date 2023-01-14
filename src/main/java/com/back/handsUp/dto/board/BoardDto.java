@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @NoArgsConstructor
 public class BoardDto {
     @Getter
@@ -14,7 +16,7 @@ public class BoardDto {
         private String indicateLocation;
         private String location;
         private String content;
-        private String name;
+        private List<String> tagList;
         private int messageDuration;
     }
 }
