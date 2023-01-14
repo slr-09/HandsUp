@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @Slf4j
 @RequestMapping("/boards")
 @RestController
@@ -45,10 +47,10 @@ public class BoardController {
 //    }
 
     @ResponseBody
-    @PostMapping("/{userIdx}")
-    public BaseResponse<String> addBoard(@PathVariable Long userIdx, @RequestBody BoardDto.GetBoardInfo boardInfo){
+    @PostMapping("/")
+    public BaseResponse<String> addBoard(Principal principal, @RequestBody BoardDto.GetBoardInfo boardInfo){
         try{
-            this.boardService.addBoard(userIdx, boardInfo);
+            this.boardService.addBoard(principal, boardInfo);
             return new BaseResponse<>("게시글을 등록하였습니다.");
         } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
@@ -57,9 +59,9 @@ public class BoardController {
 
     @ResponseBody
     @PatchMapping("/{boardIdx}")
-    public BaseResponse<String> patchBoard(@PathVariable Long boardIdx, @RequestBody BoardDto.GetBoardInfo boardInfo){
+    public BaseResponse<String> patchBoard(Principal principal, @PathVariable Long boardIdx, @RequestBody BoardDto.GetBoardInfo boardInfo){
         try{
-            this.boardService.patchBoard(boardIdx, boardInfo);
+            this.boardService.patchBoard(principal, boardIdx, boardInfo);
             return new BaseResponse<>("게시글을 수정하였습니다.");
         } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
