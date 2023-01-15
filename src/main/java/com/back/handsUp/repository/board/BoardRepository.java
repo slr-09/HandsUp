@@ -42,6 +42,5 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 //    }
     Optional<Board> findByBoardIdx(Long boardIdx);
 
-//    List<Board> showBoardList();
 
 }

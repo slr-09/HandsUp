@@ -46,15 +46,16 @@ public class BoardService {
         return optional.get();
     }
 
-//    public List<Board> showBoardList() throws BaseException {
-//        try {
-//            List<Board> getBoards = boardRepository.showBoardList();
-//            return getBoards;
-//        } catch (Exception exception) {
-//            throw new BaseException(DATABASE_INSERT_ERROR);
-//        }
-//
-//    }
+    //전체 게시물 조회
+    public List<Board> showBoardList() throws BaseException {
+        try {
+            List<Board> getBoards = boardRepository.findAll();
+            return getBoards;
+        } catch (Exception exception) {
+            throw new BaseException(DATABASE_INSERT_ERROR);
+        }
+
+    }
 
 //    public void likeBoard(int userIdx, int boardIdx) {
 //        User hostUser = boardRepository.findUserByBoardIdx(boardIdx);
