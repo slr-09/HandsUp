@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @Slf4j
 @RequestMapping("/boards")
@@ -34,6 +35,17 @@ public class BoardController {
         Board board = boardService.boardViewByIdx(boardIdx);
         return new BaseResponse<>(board);
     }
+
+//    @ResponseBody
+//    @GetMapping("/showList")
+//    public BaseResponse<List<Board>> showBoardList(){
+//        try {
+//            List<Board> getBoards = boardService.showBoardList();
+//            return new BaseResponse<>(getBoards);
+//        }catch (BaseException exception){
+//            return new BaseResponse<>((exception.getStatus()));
+//        }
+//    }
 
 //    @PostMapping("/like/{boardIdx}")
 //    public BaseResponse<String> like(@PathVariable("boardIdx") Long boardIdx, @RequestBody Long userIdx) {
