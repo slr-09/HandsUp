@@ -4,6 +4,7 @@ import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.dto.jwt.TokenDto;
+import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -47,5 +48,18 @@ public class UserController {
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
+    }
+
+    @ResponseBody
+    @PostMapping("create/character")
+    public BaseResponse<String> createCharacter(@RequestBody CharacterDto.GetCharacterInfo characterInfo){
+
+        try{
+            this.userService.createCharacter(characterInfo);
+            return new BaseResponse<>("캐릭터가 생성되었습니다.");
+        }catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
+
     }
 }

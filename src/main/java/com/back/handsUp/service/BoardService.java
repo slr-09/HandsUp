@@ -23,6 +23,7 @@ import javax.transaction.Transactional;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
 @Service
 @Slf4j
@@ -43,6 +44,22 @@ public class BoardService {
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDIDX);
         }
         return optional.get();
+    }
+
+    //전체 게시물 조회
+    public List<Board> showBoardList() throws BaseException {
+        long boardNum = boardRepository.count();
+        if (boardNum==0){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARD_LIST);
+        }
+        try {
+            List<Board> getBoards = boardRepository.findAll();
+
+            return getBoards;
+        } catch (Exception exception) {
+            throw new BaseException(DATABASE_INSERT_ERROR);
+        }
+
     }
 
 //    public void likeBoard(int userIdx, int boardIdx) {
@@ -74,7 +91,7 @@ public class BoardService {
             this.boardRepository.save(boardEntity);
             setTags(boardInfo, boardEntity);
         } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
+            throw new BaseException(DATABASE_INSERT_ERROR);
         }
 
         Optional<User> optional = this.userRepository.findByEmail(principal.getName());
@@ -90,7 +107,7 @@ public class BoardService {
         try{
             this.boardUserRepository.save(boardUserEntity);
         } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
+            throw new BaseException(DATABASE_INSERT_ERROR);
         }
 
     }
@@ -127,7 +144,7 @@ public class BoardService {
         try{
             this.boardRepository.save(boardEntity);
         } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
+            throw new BaseException(DATABASE_INSERT_ERROR);
         }
 
         List<BoardTag> boardTagEntityList = this.boardTagRepository.findAllByBoardIdx(boardEntity);
@@ -137,7 +154,7 @@ public class BoardService {
         try{
             setTags(boardInfo, boardEntity);
         } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
+            throw new BaseException(DATABASE_INSERT_ERROR);
         }
     }
 
