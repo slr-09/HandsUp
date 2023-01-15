@@ -159,6 +159,13 @@ public class UserService {
     //캐릭터 생성
     public void createCharacter(CharacterDto.GetCharacterInfo characterInfo) throws BaseException{
 
+        //not null 값이 null로 들어온 경우
+        if(characterInfo.getEye().isBlank() || characterInfo.getEyeBrow().isBlank() || characterInfo.getHair().isBlank() ||
+        characterInfo.getNose().isBlank() || characterInfo.getMouth().isBlank()|| characterInfo.getHairColor().isBlank() ||
+                characterInfo.getSkinColor().isBlank() || characterInfo.getBackGroundColor().isBlank()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_CHARACTER_VALUE);
+        }
+
         Character characterEntity = Character.builder()
                 .eye(characterInfo.getEye())
                 .eyeBrow(characterInfo.getEyeBrow())
