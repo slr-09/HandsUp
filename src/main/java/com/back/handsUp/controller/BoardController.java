@@ -64,6 +64,7 @@ public class BoardController {
 //        return new BaseResponse<>(str);
 //    }
 
+    //본인 게시글 조회
     @GetMapping("/myBoards")
     public BaseResponse<List<BoardPreviewRes>> viewMyBoard(/*@RequestHeader("Access-Token") String accessToken*/ Principal principal) {
         try {
