@@ -41,6 +41,18 @@ public class BoardController {
         return new BaseResponse<>(board);
     }
 
+    //전체 게시물 조회
+    @ResponseBody
+    @GetMapping("/showList")
+    public BaseResponse<List<Board>> showBoardList(){
+        try {
+            List<Board> getBoards = boardService.showBoardList();
+            return new BaseResponse<>(getBoards);
+        }catch (BaseException exception){
+            return new BaseResponse<>((exception.getStatus()));
+        }
+    }
+
 //    @PostMapping("/like/{boardIdx}")
 //    public BaseResponse<String> like(@PathVariable("boardIdx") Long boardIdx, @RequestBody Long userIdx) {
 //        try{

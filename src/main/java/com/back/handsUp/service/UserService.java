@@ -7,6 +7,7 @@ import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.jwt.TokenDto;
+import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.repository.user.CharacterRepository;
 import com.back.handsUp.repository.user.SchoolRepository;
@@ -24,6 +25,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Optional;
+
+import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -151,6 +154,37 @@ public class UserService {
 
         // 토큰 발급
         return tokenDto;
+    }
+
+    //캐릭터 생성
+    public void createCharacter(CharacterDto.GetCharacterInfo characterInfo) throws BaseException{
+
+        //not null 값이 null로 들어온 경우
+        if(characterInfo.getEye().isBlank() || characterInfo.getEyeBrow().isBlank() || characterInfo.getHair().isBlank() ||
+        characterInfo.getNose().isBlank() || characterInfo.getMouth().isBlank()|| characterInfo.getHairColor().isBlank() ||
+                characterInfo.getSkinColor().isBlank() || characterInfo.getBackGroundColor().isBlank()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_CHARACTER_VALUE);
+        }
+
+        Character characterEntity = Character.builder()
+                .eye(characterInfo.getEye())
+                .eyeBrow(characterInfo.getEyeBrow())
+                .glasses(characterInfo.getGlasses())
+                .nose(characterInfo.getNose())
+                .mouth(characterInfo.getMouth())
+                .hair(characterInfo.getHair())
+                .hairColor(characterInfo.getHairColor())
+                .skinColor(characterInfo.getSkinColor())
+                .backGroundColor(characterInfo.getBackGroundColor())
+                .build();
+
+        try{
+            this.characterRepository.save(characterEntity);
+
+        } catch (Exception e) {
+            throw new BaseException(DATABASE_INSERT_ERROR);
+        }
+
     }
 
 }

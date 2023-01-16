@@ -27,11 +27,15 @@ public enum BaseResponseStatus {
     NON_EXIST_CHARACTERIDX(false, 4013, "캐릭터 인덱스가 존재하지 않습니다."),
     NON_EXIST_SCHOOLIDX(false, 4014, "학교 인덱스가 존재하지 않습니다."),
     NON_EXIST_BOARDUSERIDX(false, 4015, "유저가 작성한 게시물이 아닙니다."),
+    NON_EXIST_BOARD_LIST(false, 4016, "게시물이 존재하지 않습니다."),
 
 
 
     LOCATION_ERROR(false, 4021, "위치정보에 오류가 발생했습니다."),
     MESSAGEDURATION_ERROR(false, 4022, "메세지 지속시간에 오류가 발생했습니다."),
+
+    NON_EXIST_CHARACTER_VALUE(false,4031,"캐릭터 생성에 필요한 값이 모두 입력되지 않았습니다."),
+
 
 
     /**
