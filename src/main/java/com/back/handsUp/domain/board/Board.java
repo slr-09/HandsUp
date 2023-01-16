@@ -1,5 +1,7 @@
 package com.back.handsUp.domain.board;
 
+import com.back.handsUp.domain.user.User;
+import com.back.handsUp.dto.board.BoardPreviewRes;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
@@ -22,6 +24,7 @@ public class Board {
     @javax.persistence.Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long boardIdx;
+
 
     @javax.persistence.Column(nullable = false, columnDefinition = "TEXT")
     private String content;
@@ -54,6 +57,15 @@ public class Board {
         this.status = status;
     }
 
+    public BoardPreviewRes toPreviewRes() {
+        return BoardPreviewRes.builder()
+                .boardIdx(this.boardIdx)
+                .status(this.status)
+                .content(this.content)
+                .location(this.location)
+                .createdAt(this.createdAt)
+                .build();
+    }
     public void changeBoard(String content, String location, String indicateLocation, int messageDuration) {
         this.content = content;
         this.location = location;

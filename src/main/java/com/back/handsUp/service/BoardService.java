@@ -2,12 +2,10 @@ package com.back.handsUp.service;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
-import com.back.handsUp.domain.board.Board;
-import com.back.handsUp.domain.board.BoardTag;
-import com.back.handsUp.domain.board.BoardUser;
-import com.back.handsUp.domain.board.Tag;
+import com.back.handsUp.domain.board.*;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardDto;
+import com.back.handsUp.dto.board.BoardPreviewRes;
 import com.back.handsUp.repository.board.BoardRepository;
 import com.back.handsUp.repository.board.BoardTagRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
@@ -18,11 +16,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -54,8 +52,30 @@ public class BoardService {
 //        }
 //    }
 
+    public List<BoardPreviewRes> viewMyBoard(Principal principal) throws BaseException{
+        //long myIdx = 1L; // = jwtService.getUserIdx(token);
+        log.info("principal.getName() = {}",principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+        User user = optionalUser.get();
+
+        log.info("start boardUser");
+
+        List<Board> boardUser = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE");
+
+        log.info("boardUserIdx = {}", boardUser);
+
+        return boardUser.stream()
+                .map(Board::toPreviewRes)
+                .collect(Collectors.toList());
+    }
+
     //Todo: 로그인 구현 후 userIdx->principal
     public void addBoard(Principal principal, BoardDto.GetBoardInfo boardInfo) throws BaseException {
+
         if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLocation() == null){
             throw new BaseException(BaseResponseStatus.LOCATION_ERROR);
         }
