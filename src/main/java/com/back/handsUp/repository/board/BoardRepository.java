@@ -6,8 +6,7 @@ import com.back.handsUp.domain.user.User;
 import com.back.handsUp.mapper.BoardMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -41,6 +40,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 //        BoardUser boardUser = jdbcTemplate.update(sql, userIdx, boardIdx, "heart");
 //    }
     Optional<Board> findByBoardIdx(Long boardIdx);
+
 
 
 }

@@ -1,6 +1,7 @@
 package com.back.handsUp.domain.user;
 
 import com.back.handsUp.baseResponse.BaseEntity;
+import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.utils.Role;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +10,9 @@ import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Setter
@@ -48,6 +51,7 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
 
     @Builder
     public User(String email, String password, String nickname, Date nicknameUpdatedAt, Character characterIdx, School schoolIdx, String status, Role role) {
