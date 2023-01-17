@@ -157,7 +157,7 @@ public class UserService {
     }
 
     //캐릭터 생성
-    public void createCharacter(CharacterDto.GetCharacterInfo characterInfo) throws BaseException{
+    public Character createCharacter(CharacterDto.GetCharacterInfo characterInfo) throws BaseException{
 
         //not null 값이 null로 들어온 경우
         if(characterInfo.getEye().isBlank() || characterInfo.getEyeBrow().isBlank() || characterInfo.getHair().isBlank() ||
@@ -180,6 +180,7 @@ public class UserService {
 
         try{
             this.characterRepository.save(characterEntity);
+            return characterEntity;
 
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);

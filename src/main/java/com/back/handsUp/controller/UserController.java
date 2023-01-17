@@ -3,6 +3,7 @@ package com.back.handsUp.controller;
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserDto;
@@ -52,11 +53,11 @@ public class UserController {
 
     @ResponseBody
     @PostMapping("create/character")
-    public BaseResponse<String> createCharacter(@RequestBody CharacterDto.GetCharacterInfo characterInfo){
+    public BaseResponse<Long> createCharacter(@RequestBody CharacterDto.GetCharacterInfo characterInfo){
 
         try{
-            this.userService.createCharacter(characterInfo);
-            return new BaseResponse<>("캐릭터가 생성되었습니다.");
+            Character character = this.userService.createCharacter(characterInfo);
+            return new BaseResponse<>(character.getCharacterIdx());
         }catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
         }
