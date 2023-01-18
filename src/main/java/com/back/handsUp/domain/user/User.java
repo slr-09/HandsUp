@@ -2,6 +2,7 @@ package com.back.handsUp.domain.user;
 
 import com.back.handsUp.baseResponse.BaseEntity;
 import com.back.handsUp.domain.board.Board;
+import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.utils.Role;
 import lombok.Builder;
 import lombok.Getter;
@@ -63,6 +64,13 @@ public class User extends BaseEntity {
         this.schoolIdx = schoolIdx;
         this.status = status;
         this.role = role;
+    }
+
+    public UserDto.UserBoards userBoards(List<Board> myboards) {
+        return UserDto.UserBoards.builder()
+                .userIdx(this.userIdx)
+                .myboards(myboards)
+                .build();
     }
 
     public void changeStatus (String newStatus) {

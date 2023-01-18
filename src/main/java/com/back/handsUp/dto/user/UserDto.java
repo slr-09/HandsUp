@@ -1,10 +1,12 @@
 package com.back.handsUp.dto.user;
 
+import com.back.handsUp.domain.board.Board;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 
 import javax.persistence.JoinColumn;
 import javax.validation.constraints.*;
+import java.util.List;
 
 @NoArgsConstructor
 public class UserDto {
@@ -47,5 +49,11 @@ public class UserDto {
 
         @Id
         private Long userIdx;
+    }
+
+    @Builder
+    public static class UserBoards {
+        private Long userIdx;
+        private List<Board> myboards;
     }
 }

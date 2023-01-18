@@ -7,10 +7,12 @@ import com.back.handsUp.domain.jwt.RefreshToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
+import com.back.handsUp.dto.board.BoardPreviewRes;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.repository.board.BoardRepository;
+import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.user.CharacterRepository;
 import com.back.handsUp.repository.user.SchoolRepository;
 import com.back.handsUp.repository.user.UserRepository;
@@ -31,6 +33,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
@@ -42,7 +45,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final CharacterRepository characterRepository;
     private final SchoolRepository schoolRepository;
-    private final BoardRepository boardRepository;
+    private final BoardUserRepository boardUserRepository;
+
+    private final BoardService boardService;
 
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
@@ -198,7 +203,7 @@ public class UserService {
     }
 
     //회원 탈퇴 (patch)
-    public Long withdrawUser(Principal principal, Long userIdx)  throws BaseException{
+    public UserDto.UserBoards withdrawUser(Principal principal, Long userIdx)  throws BaseException{
 
 
         Optional<User> optional = this.userRepository.findByEmail(principal.getName());
@@ -228,11 +233,14 @@ public class UserService {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
 
-        //TODO : 게시물 상태 변경
+        //게시물 상태 변경
+        List<Board> myBoards = this.boardUserRepository.findBoardIdxByUserIdxAndStatus(userEntity1, "WRITE");
+        for(Board board: myBoards){
+            board.changeStatus("DEL_USER");
+        }
 
 
-
-        return userIdx;
+        return userEntity1.userBoards(myBoards);
     }
 
 }
