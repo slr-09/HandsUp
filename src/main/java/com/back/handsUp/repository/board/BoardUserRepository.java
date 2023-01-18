@@ -17,6 +17,9 @@ public interface BoardUserRepository extends JpaRepository<BoardUser, Long> {
     @Query("select b.boardIdx from BoardUser b where b.userIdx = ?1 and b.status = ?2")
     List<Board> findBoardIdxByUserIdxAndStatus(User userIdx, String status);
 
+    @Query("select b.userIdx from BoardUser b where b.boardIdx.boardIdx = ?1 and b.status = ?2 ")
+    Optional<User> findUserIdxByBoardIdxAndStatus(Long boardIdx, String status);
+
     Optional<BoardUser> findBoardUserByBoardIdxAndUserIdx(Board boardIdx, User userIdx);
 }
 
