@@ -20,6 +20,7 @@ import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
@@ -56,19 +57,55 @@ public class BoardService {
 
             return getBoards;
         } catch (Exception exception) {
-            throw new BaseException(DATABASE_INSERT_ERROR);
+            throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
         }
 
     }
 
-//    public void likeBoard(int userIdx, int boardIdx) {
-//        User hostUser = boardRepository.findUserByBoardIdx(boardIdx);
-//
-//        if (userIdx != hostUser.getUserIdx()) {
-//
-//            firebaseCloudMessageService.sendMessageTo(hostUser.getFcmToken(), "Hands Up", "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
+    public void likeBoard(Principal principal, Long boardIdx) throws BaseException {
+
+        Optional<Board> optionalBoard = boardRepository.findByBoardIdx(boardIdx);
+
+        if (optionalBoard.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARD_LIST);
+        }
+        Board board = optionalBoard.get();
+
+        //user : 하트 누르는 사용자.
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User user = optionalUser.get();
+
+        //boardUser : 게시글 작성자.
+        Optional<User> optionalBoardUser = boardUserRepository.findUserIdxByBoardIdxAndStatus(boardIdx, "WRITE");
+
+        if (optionalBoardUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User boardUser = optionalBoardUser.get();
+
+        BoardUser likeEntity = BoardUser.builder()
+                .userIdx(user)
+                .boardIdx(board)
+                .status("LIKE").build();
+
+        try {
+            boardUserRepository.save(likeEntity);
+        } catch (Exception e) {
+            throw new BaseException(DATABASE_INSERT_ERROR);
+        }
+
+//Todo : User FcmToken 추가 후 주석 해제.
+//      하트 알림 전송 부분.
+//        if (!Objects.equals(user.getUserIdx(), boardUser.getUserIdx())) {
+//                firebaseCloudMessageService.sendMessageTo(boardUser.getFcmToken(), "Hands Up", "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
 //        }
-//    }
+
+
+    }
 
     public List<BoardPreviewRes> viewMyBoard(Principal principal) throws BaseException{
         //long myIdx = 1L; // = jwtService.getUserIdx(token);
@@ -76,7 +113,7 @@ public class BoardService {
         Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
 
         if (optionalUser.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
         User user = optionalUser.get();
 

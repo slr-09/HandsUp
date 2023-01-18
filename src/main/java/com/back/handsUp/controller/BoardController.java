@@ -7,6 +7,7 @@ import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardDto;
 import com.back.handsUp.dto.board.BoardPreviewRes;
 import com.back.handsUp.service.BoardService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +18,12 @@ import java.security.Principal;
 import java.util.List;
 
 @Slf4j
+@RequiredArgsConstructor
 @RequestMapping("/boards")
 @RestController
 public class BoardController {
 
-    @Autowired
-    private BoardService boardService;
-
-    public BoardController(BoardService boardService) {
-        this.boardService = boardService;
-    }
+    private final BoardService boardService;
 
     @GetMapping("/test")
     public ResponseEntity<String> test(Principal principal) {
@@ -53,16 +50,15 @@ public class BoardController {
         }
     }
 
-//    @PostMapping("/like/{boardIdx}")
-//    public BaseResponse<String> like(@PathVariable("boardIdx") Long boardIdx, @RequestBody Long userIdx) {
-//        try{
-//            this.boardService.likeBoard(userIdx, boardIdx);
-//        } catch (BaseException e) {
-//            return new BaseResponse<>(e.getStatus());
-//        }
-//        String str = "하트 누름";
-//        return new BaseResponse<>(str);
-//    }
+    @PostMapping("/{boardIdx}/like")
+    public BaseResponse<String> like(Principal principal,@PathVariable Long boardIdx) {
+        try{
+            this.boardService.likeBoard(principal, boardIdx);
+            return new BaseResponse<>("해당 게시글에 하트를 눌렀습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 
     //본인 게시글 조회
     @GetMapping("/myBoards")
