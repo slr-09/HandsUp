@@ -3,12 +3,14 @@ package com.back.handsUp.domain.jwt;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @Table(name = "refresh_token")
 @Entity

@@ -118,6 +118,22 @@ public class UserService {
         }
     }
 
+    public void logOut(Principal principal) throws BaseException {
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        if(optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+        User userEntity = optional.get();
+
+        Optional<RefreshToken> optional1 = this.refreshTokenRepository.findByKeyId(userEntity.getEmail());
+
+        RefreshToken token = optional1.get();
+
+        token.setValue("");
+
+
+    }
+
 
 
     public TokenDto token(UserDto.ReqLogIn user){

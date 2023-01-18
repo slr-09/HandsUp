@@ -52,6 +52,17 @@ public class UserController {
         }
     }
 
+    @ResponseBody
+    @PostMapping("/logout")
+    public BaseResponse<String> logOut(Principal principal){
+        try{
+            this.userService.logOut(principal);
+            return new BaseResponse<>("로그아웃이 완료되었습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
 
 
     @ResponseBody
