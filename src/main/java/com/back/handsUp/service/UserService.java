@@ -2,6 +2,7 @@ package com.back.handsUp.service;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.domain.jwt.RefreshToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
@@ -9,6 +10,7 @@ import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserDto;
+import com.back.handsUp.repository.board.BoardRepository;
 import com.back.handsUp.repository.user.CharacterRepository;
 import com.back.handsUp.repository.user.SchoolRepository;
 import com.back.handsUp.repository.user.UserRepository;
@@ -16,6 +18,7 @@ import com.back.handsUp.repository.user.jwt.RefreshTokenRepository;
 import com.back.handsUp.utils.Role;
 import com.back.handsUp.utils.TokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -24,7 +27,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
@@ -36,6 +42,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final CharacterRepository characterRepository;
     private final SchoolRepository schoolRepository;
+    private final BoardRepository boardRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
@@ -105,6 +112,8 @@ public class UserService {
 
         }
     }
+
+
 
     public TokenDto token(UserDto.ReqLogIn user){
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
@@ -186,6 +195,44 @@ public class UserService {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
 
+    }
+
+    //회원 탈퇴 (patch)
+    public Long withdrawUser(Principal principal, Long userIdx)  throws BaseException{
+
+
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+
+        Optional<User> optional2 = this.userRepository.findByUserIdx(userIdx);
+
+        if(optional.isEmpty() || optional2.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+
+        User userEntity1 = optional.get();
+        User userEntity2 = optional2.get();
+
+        if(userEntity1!=userEntity2){
+            throw new BaseException(BaseResponseStatus.NON_CORRESPOND_USER);
+        }
+
+        if(userEntity1.getStatus().equals("DELETE")){
+            throw new BaseException(BaseResponseStatus.ALREADY_DELETE_USER);
+        }else{
+            userEntity1.changeStatus("DELETE");
+        }
+
+        try{
+            this.userRepository.save(userEntity1);
+        }catch (Exception e) {
+            throw new BaseException(DATABASE_INSERT_ERROR);
+        }
+
+        //TODO : 게시물 상태 변경
+
+
+
+        return userIdx;
     }
 
 }

@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.security.Principal;
 
 @RequiredArgsConstructor
 @RestController
@@ -51,6 +52,8 @@ public class UserController {
         }
     }
 
+
+
     @ResponseBody
     @PostMapping("create/character")
     public BaseResponse<Long> createCharacter(@RequestBody CharacterDto.GetCharacterInfo characterInfo){
@@ -62,5 +65,17 @@ public class UserController {
             return new BaseResponse<>((exception.getStatus()));
         }
 
+    }
+
+    //회원 탈퇴
+    @ResponseBody
+    @PatchMapping("/withdraw/{userIdx}")
+    public BaseResponse<Long> withdrawUser(Principal principal, @PathVariable("userIdx") Long userIdx){
+        try{
+            this.userService.withdrawUser(principal, userIdx);
+            return new BaseResponse<>(userIdx);
+        }catch (BaseException exception) {
+            return new BaseResponse<>((exception.getStatus()));
+        }
     }
 }
