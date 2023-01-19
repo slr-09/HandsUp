@@ -7,6 +7,7 @@ import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.jwt.TokenDto;
+import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.repository.user.CharacterRepository;
 import com.back.handsUp.repository.user.SchoolRepository;
@@ -23,7 +24,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.security.Principal;
 import java.util.Optional;
+
+import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -43,7 +47,7 @@ public class UserService {
     public void signupUser(UserDto.ReqSignUp user) throws BaseException {
         //이메일 중복 확인
         Optional<User> optional = this.userRepository.findByEmail(user.getEmail());
-        if(!optional.isEmpty()){
+        if(!optional.isEmpty() && optional.get().getStatus().equals("ACTIVE")){
             throw new BaseException(BaseResponseStatus.EXIST_USER);
         }
 
@@ -151,6 +155,62 @@ public class UserService {
 
         // 토큰 발급
         return tokenDto;
+    }
+
+    //캐릭터 생성
+    public void createCharacter(CharacterDto.GetCharacterInfo characterInfo) throws BaseException{
+
+        //not null 값이 null로 들어온 경우
+        if(characterInfo.getEye().isBlank() || characterInfo.getEyeBrow().isBlank() || characterInfo.getHair().isBlank() ||
+        characterInfo.getNose().isBlank() || characterInfo.getMouth().isBlank()|| characterInfo.getHairColor().isBlank() ||
+                characterInfo.getSkinColor().isBlank() || characterInfo.getBackGroundColor().isBlank()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_CHARACTER_VALUE);
+        }
+
+        Character characterEntity = Character.builder()
+                .eye(characterInfo.getEye())
+                .eyeBrow(characterInfo.getEyeBrow())
+                .glasses(characterInfo.getGlasses())
+                .nose(characterInfo.getNose())
+                .mouth(characterInfo.getMouth())
+                .hair(characterInfo.getHair())
+                .hairColor(characterInfo.getHairColor())
+                .skinColor(characterInfo.getSkinColor())
+                .backGroundColor(characterInfo.getBackGroundColor())
+                .build();
+
+        try{
+            this.characterRepository.save(characterEntity);
+
+        } catch (Exception e) {
+            throw new BaseException(DATABASE_INSERT_ERROR);
+        }
+
+    }
+
+    //비밀번호 변경
+    public void patchPwd(Principal principal, UserDto.ReqPwd userPwd) throws BaseException{
+        if(userPwd.getCurrentPwd().isEmpty() || userPwd.getNewPwd().isEmpty()){
+            throw new BaseException(BaseResponseStatus.INVALID_REQUEST);
+        }
+
+        if(userPwd.getCurrentPwd().equals(userPwd.getNewPwd())){
+            throw new BaseException(BaseResponseStatus.SAME_PASSWORD);
+        }
+
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        if(optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User user = optional.get();
+
+        if(passwordEncoder.matches(userPwd.getCurrentPwd(), user.getPassword())){
+            String encodedPwd = passwordEncoder.encode(userPwd.getNewPwd());
+            user.changePWd(encodedPwd);
+        } else{
+            throw new BaseException(BaseResponseStatus.INVALID_PASSWORD);
+        }
+
     }
 
 }

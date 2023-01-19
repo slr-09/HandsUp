@@ -17,6 +17,7 @@ public enum BaseResponseStatus {
     INVALID_PASSWORD(false, 4001, "비밀번호가 틀렸습니다."),
     EXIST_USER(false, 4002, "이미 존재하는 유저입니다."),
     INVALID_REQUEST(false, 4003, "입력 양식이 잘못되었습니다."),
+    SAME_PASSWORD(false, 4004, "현재 비밀번호와 변경할 비밀번호가 같습니다."),
 
 
 
@@ -27,11 +28,17 @@ public enum BaseResponseStatus {
     NON_EXIST_CHARACTERIDX(false, 4013, "캐릭터 인덱스가 존재하지 않습니다."),
     NON_EXIST_SCHOOLIDX(false, 4014, "학교 인덱스가 존재하지 않습니다."),
     NON_EXIST_BOARDUSERIDX(false, 4015, "유저가 작성한 게시물이 아닙니다."),
+    NON_EXIST_BOARD_LIST(false, 4016, "게시물이 존재하지 않습니다."),
+    NON_EXIST_CHATROOMIDX(false, 4017, "채팅방이 존재하지 않습니다."),
+
 
 
 
     LOCATION_ERROR(false, 4021, "위치정보에 오류가 발생했습니다."),
     MESSAGEDURATION_ERROR(false, 4022, "메세지 지속시간에 오류가 발생했습니다."),
+
+    NON_EXIST_CHARACTER_VALUE(false,4031,"캐릭터 생성에 필요한 값이 모두 입력되지 않았습니다."),
+
 
 
     /**
