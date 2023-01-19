@@ -17,6 +17,7 @@ public enum BaseResponseStatus {
     INVALID_PASSWORD(false, 4001, "비밀번호가 틀렸습니다."),
     EXIST_USER(false, 4002, "이미 존재하는 유저입니다."),
     INVALID_REQUEST(false, 4003, "입력 양식이 잘못되었습니다."),
+    SAME_PASSWORD(false, 4004, "현재 비밀번호와 변경할 비밀번호가 같습니다."),
 
 
 

@@ -69,6 +69,10 @@ public class User extends BaseEntity {
         this.status = newStatus;
     }
 
+    public void changePWd(String newPwd) {
+        this.password = newPwd;
+    }
+
     public String getRoleName(){
         return this.role.name();
     }
