@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.security.Principal;
 import java.util.Optional;
 
 import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
@@ -46,7 +47,7 @@ public class UserService {
     public void signupUser(UserDto.ReqSignUp user) throws BaseException {
         //이메일 중복 확인
         Optional<User> optional = this.userRepository.findByEmail(user.getEmail());
-        if(!optional.isEmpty()){
+        if(!optional.isEmpty() && optional.get().getStatus().equals("ACTIVE")){
             throw new BaseException(BaseResponseStatus.EXIST_USER);
         }
 
@@ -183,6 +184,31 @@ public class UserService {
 
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
+        }
+
+    }
+
+    //비밀번호 변경
+    public void patchPwd(Principal principal, UserDto.ReqPwd userPwd) throws BaseException{
+        if(userPwd.getCurrentPwd().isEmpty() || userPwd.getNewPwd().isEmpty()){
+            throw new BaseException(BaseResponseStatus.INVALID_REQUEST);
+        }
+
+        if(userPwd.getCurrentPwd().equals(userPwd.getNewPwd())){
+            throw new BaseException(BaseResponseStatus.SAME_PASSWORD);
+        }
+
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        if(optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User user = optional.get();
+
+        if(passwordEncoder.matches(userPwd.getCurrentPwd(), user.getPassword())){
+            String encodedPwd = passwordEncoder.encode(userPwd.getNewPwd());
+            user.changePWd(encodedPwd);
+        } else{
+            throw new BaseException(BaseResponseStatus.INVALID_PASSWORD);
         }
 
     }

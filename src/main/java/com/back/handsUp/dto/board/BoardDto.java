@@ -16,7 +16,7 @@ public class BoardDto {
         private String indicateLocation;
         private String location;
         private String content;
-        private List<String> tagList;
+        private String tag;
         private int messageDuration;
     }
 }
