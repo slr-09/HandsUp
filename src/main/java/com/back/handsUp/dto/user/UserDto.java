@@ -56,7 +56,6 @@ public class UserDto {
     @Builder
     public static class ReqWithdraw {
 
-        @Id
         private Long userIdx;
     }
 
