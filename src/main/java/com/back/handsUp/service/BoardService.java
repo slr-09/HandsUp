@@ -48,12 +48,12 @@ public class BoardService {
 
     //전체 게시물 조회
     public List<Board> showBoardList() throws BaseException {
-        long boardNum = boardRepository.count();
-        if (boardNum==0){
-            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARD_LIST);
-        }
+//        long boardNum = boardRepository.count();
+//        if (boardNum==0){
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARD_LIST);
+//        }
         try {
-            List<Board> getBoards = boardRepository.findAll();
+            List<Board> getBoards = boardRepository.findBoardByStatus("ACTIVE");
 
             return getBoards;
         } catch (Exception exception) {
@@ -128,7 +128,6 @@ public class BoardService {
                 .collect(Collectors.toList());
     }
 
-    //Todo: 로그인 구현 후 userIdx->principal
     public void addBoard(Principal principal, BoardDto.GetBoardInfo boardInfo) throws BaseException {
 
         if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLocation() == null){
@@ -170,7 +169,6 @@ public class BoardService {
 
     }
 
-    //boardIdx->principal
     public void patchBoard(Principal principal, Long boardIdx, BoardDto.GetBoardInfo boardInfo) throws BaseException{
         if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLocation() == null){
             throw new BaseException(BaseResponseStatus.LOCATION_ERROR);
@@ -217,14 +215,12 @@ public class BoardService {
     }
 
     private void setTags(BoardDto.GetBoardInfo boardInfo, Board boardEntity) {
-        List<String> tagNameList = boardInfo.getTagList();
-        for(String tmp: tagNameList){
-            Optional<Tag> tagEntity = this.tagRepository.findByName(tmp);
+            Optional<Tag> tagEntity = this.tagRepository.findByName(boardInfo.getTag());
             Tag targetTag;
 
             if(tagEntity.isEmpty()){
                 targetTag = Tag.builder()
-                        .name(tmp)
+                        .name(boardInfo.getTag())
                         .build();
                 this.tagRepository.save(targetTag);
             } else {
@@ -242,6 +238,5 @@ public class BoardService {
                 BoardTag boardTagEntity = optional.get();
                 boardTagEntity.changeStatus("ACTIVE");
             }
-        }
     }
 }

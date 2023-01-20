@@ -2,6 +2,7 @@ package com.back.handsUp.domain.user;
 
 import com.back.handsUp.baseResponse.BaseEntity;
 import com.back.handsUp.domain.board.Board;
+import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.utils.Role;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,8 +66,18 @@ public class User extends BaseEntity {
         this.role = role;
     }
 
+    public UserDto.ReqWithdraw userBoards() {
+        return UserDto.ReqWithdraw.builder()
+                .userIdx(this.userIdx)
+                .build();
+    }
+
     public void changeStatus (String newStatus) {
         this.status = newStatus;
+    }
+
+    public void changePWd(String newPwd) {
+        this.password = newPwd;
     }
 
     public String getRoleName(){

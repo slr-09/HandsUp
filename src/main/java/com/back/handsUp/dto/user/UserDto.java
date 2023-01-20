@@ -1,8 +1,12 @@
 package com.back.handsUp.dto.user;
 
+import com.back.handsUp.domain.board.Board;
 import lombok.*;
+import org.springframework.data.annotation.Id;
 
+import javax.persistence.JoinColumn;
 import javax.validation.constraints.*;
+import java.util.List;
 
 @NoArgsConstructor
 public class UserDto {
@@ -39,4 +43,20 @@ public class UserDto {
         @NotBlank(message = "비밀번호는 필수 입력 값입니다.")
         private String password;
     }
+
+ 
+    @AllArgsConstructor
+    @Builder
+    @Getter
+    public static class ReqPwd {
+        private String currentPwd;
+        private String newPwd;
+    }
+
+    @Builder
+    public static class ReqWithdraw {
+
+        private Long userIdx;
+    }
+
 }
