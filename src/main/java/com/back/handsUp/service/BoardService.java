@@ -39,12 +39,71 @@ public class BoardService {
     private final FirebaseCloudMessageService firebaseCloudMessageService;
 
 
-    public Board boardViewByIdx(Long boardIdx) throws BaseException {
-        Optional<Board> optional = this.boardRepository.findByBoardIdx(boardIdx);
-        if(optional.isEmpty()){
+    //단일 게시물 조회
+    public BoardDto.SingleBoardRes boardViewByIdx(Principal principal, Long boardIdx) throws BaseException {
+
+        //조회하는 유저
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User user = optionalUser.get();
+
+        //조회하는 게시물
+        Optional<Board> optionalBoard = this.boardRepository.findByBoardIdx(boardIdx);
+        if(optionalBoard.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDIDX);
         }
-        return optional.get();
+        Board board = optionalBoard.get();
+
+
+        String locationInfo;
+        //위치 정보 동의하면 locationInfo 에 위치 담기
+        if (Objects.equals(board.getIndicateLocation(), "Y")) {
+            locationInfo = board.getLocation();
+        } else {
+            locationInfo = "위치 비밀";
+        }
+
+        //like 확인
+        Optional<BoardUser> optionalBoardUserEntity = boardUserRepository.findBoardUserByBoardIdxAndUserIdx(board, user);
+
+        String didLike;
+        if(optionalBoardUserEntity.isEmpty()){
+            didLike = "false";
+        }else {
+            BoardUser boardUserEntity = optionalBoardUserEntity.get();
+            didLike = boardUserEntity.getStatus();
+        }
+
+        //like 눌렀을 때만 true 반환
+        if (Objects.equals(didLike, "LIKE")) {
+            didLike = "true";
+        }
+
+        //게시글 작성자
+        Optional<User> optionalBoardUser = this.boardUserRepository.findUserIdxByBoardIdxAndStatus(boardIdx, "WRITE");
+        if(optionalBoardUser.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+        }
+        User boardUser = optionalBoardUser.get();
+
+        //태그
+        Optional<Tag> optionalTag = this.boardTagRepository.findTagIdxByBoardIdx(boardIdx);
+        if(optionalTag.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_TAG_VALUE);
+        }
+        Tag tag = optionalTag.get();
+
+        return BoardDto.SingleBoardRes.builder()
+                .content(board.getContent())
+                .tag(tag.getName())
+                .nickname(boardUser.getNickname())
+                .messageDuration(board.getMessageDuration())
+                .location(locationInfo)
+                .didLike(didLike)
+                .createdAt(board.getCreatedAt()).build();
     }
 
     //전체 게시물 조회
