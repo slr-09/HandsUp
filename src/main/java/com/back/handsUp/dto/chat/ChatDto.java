@@ -29,7 +29,7 @@ public class ChatDto {
     @Builder
     public static class BriefChatMessage {
         private Long chatMessageIdx;
-        private Long userIdx; //메세지를 보낸 유저 (A->B이면 A)
+        private Boolean isMe; //메세지를 보낸 유저가 '나'이면 TRUE
         private String chatContents;
         private LocalDateTime createdAt;
     }

@@ -46,9 +46,15 @@ public class ChatService {
         List<ChatMessage> chatMessageList = this.chatMessageRepository.findByChatRoomIdxOrderByChatMessageIdxDesc(chatRoom);
         List<ChatDto.BriefChatMessage> briefChatMessageList = new ArrayList<>();
         for(ChatMessage chat: chatMessageList){
+            Boolean isMe;
+            if(chat.getUserIdx().equals(optional.get())){
+                isMe=Boolean.TRUE;
+            } else{
+                isMe=Boolean.FALSE;
+            }
             ChatDto.BriefChatMessage briefChatMessage = ChatDto.BriefChatMessage.builder()
                     .chatMessageIdx(chat.getChatMessageIdx())
-                    .userIdx(chat.getUserIdx().getUserIdx())
+                    .isMe(isMe)
                     .chatContents(chat.getChatContents())
                     .createdAt(chat.getCreatedAt())
                     .build();
