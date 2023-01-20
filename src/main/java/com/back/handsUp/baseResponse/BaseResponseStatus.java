@@ -39,6 +39,8 @@ public enum BaseResponseStatus {
 
     NON_EXIST_CHARACTER_VALUE(false,4031,"캐릭터 생성에 필요한 값이 모두 입력되지 않았습니다."),
 
+    NON_EXIST_TAG_VALUE(false,4032,"유효하지 않은 테그값입니다."),
+
 
 
     /**
