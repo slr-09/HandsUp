@@ -160,10 +160,12 @@ public class UserService {
     }
 
     public void updateNickname(Long userIdx, String nickname) throws BaseException {
-
+        Optional<User> optional = this.userRepository.findByUserIdx(userIdx);
+        if(optional.isEmpty()){
+            throw new BaseException(NON_EXIST_USERIDX);
+        }
         try{
-            Optional<User> byUserIdx = this.userRepository.findByUserIdx(userIdx);
-            User findUser = byUserIdx.get();
+            User findUser = optional.get();
             findUser.setNickname(nickname);
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
