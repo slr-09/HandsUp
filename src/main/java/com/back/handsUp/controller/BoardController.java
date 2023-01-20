@@ -33,8 +33,8 @@ public class BoardController {
 
 
     @GetMapping("/singleList/{boardIdx}")
-    public BaseResponse<Board> BoardViewByIdx(@PathVariable("boardIdx") Long boardIdx) throws BaseException {
-        Board board = boardService.boardViewByIdx(boardIdx);
+    public BaseResponse<BoardDto.SingleBoardRes> BoardViewByIdx(Principal principal, @PathVariable("boardIdx") Long boardIdx) throws BaseException {
+        BoardDto.SingleBoardRes board = boardService.boardViewByIdx(principal, boardIdx);
         return new BaseResponse<>(board);
     }
 
