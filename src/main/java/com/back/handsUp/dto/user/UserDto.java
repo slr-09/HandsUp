@@ -47,6 +47,7 @@ public class UserDto {
  
     @AllArgsConstructor
     @Builder
+    @Getter
     public static class ReqPwd {
         private String currentPwd;
         private String newPwd;

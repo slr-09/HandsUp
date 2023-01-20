@@ -220,27 +220,28 @@ public class UserService {
 
 
     //비밀번호 변경
-    public void patchPwd(Principal principal, UserDto.ReqPwd userPwd) throws BaseException{
-        if(userPwd.getCurrentPwd().isEmpty() || userPwd.getNewPwd().isEmpty()){
+    public void patchPwd(Principal principal, UserDto.ReqPwd userPwd) throws BaseException {
+        if (userPwd.getCurrentPwd().isEmpty() || userPwd.getNewPwd().isEmpty()) {
             throw new BaseException(BaseResponseStatus.INVALID_REQUEST);
         }
 
-        if(userPwd.getCurrentPwd().equals(userPwd.getNewPwd())){
+        if (userPwd.getCurrentPwd().equals(userPwd.getNewPwd())) {
             throw new BaseException(BaseResponseStatus.SAME_PASSWORD);
         }
 
         Optional<User> optional = this.userRepository.findByEmail(principal.getName());
-        if(optional.isEmpty()){
+        if (optional.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
         User user = optional.get();
 
-        if(passwordEncoder.matches(userPwd.getCurrentPwd(), user.getPassword())){
+        if (passwordEncoder.matches(userPwd.getCurrentPwd(), user.getPassword())) {
             String encodedPwd = passwordEncoder.encode(userPwd.getNewPwd());
             user.changePWd(encodedPwd);
-        } else{
+        } else {
             throw new BaseException(BaseResponseStatus.INVALID_PASSWORD);
         }
+    }
 
 
     //회원 탈퇴 (patch)
@@ -284,5 +285,6 @@ public class UserService {
         return userEntity1.userBoards();
 
     }
+
 
 }
