@@ -66,10 +66,9 @@ public class User extends BaseEntity {
         this.role = role;
     }
 
-    public UserDto.UserBoards userBoards(List<Board> myboards) {
-        return UserDto.UserBoards.builder()
+    public UserDto.ReqWithdraw userBoards() {
+        return UserDto.ReqWithdraw.builder()
                 .userIdx(this.userIdx)
-                .myboards(myboards)
                 .build();
     }
 

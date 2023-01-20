@@ -219,7 +219,7 @@ public class UserService {
     }
 
     //회원 탈퇴 (patch)
-    public UserDto.UserBoards withdrawUser(Principal principal, Long userIdx)  throws BaseException{
+    public UserDto.ReqWithdraw withdrawUser(Principal principal, Long userIdx)  throws BaseException{
 
 
         Optional<User> optional = this.userRepository.findByEmail(principal.getName());
@@ -256,7 +256,7 @@ public class UserService {
         }
 
 
-        return userEntity1.userBoards(myBoards);
+        return userEntity1.userBoards();
     }
 
 }
