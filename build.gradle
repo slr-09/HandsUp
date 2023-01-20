@@ -42,3 +42,12 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+//
+//bootJar {
+//	mainClassName = 'com.back.handsUp.HandsUpApplication'
+//}
+//
+//bootRun {
+//	String activeProfile = System.properties['spring.profiles.active']
+//	systemProperty "spring.profiles.active", activeProfile
+//}
