@@ -65,7 +65,7 @@ public class ChatService {
 
         ChatDto.ResChatMessageList resChatMessageList =ChatDto.ResChatMessageList.builder()
                 .board(chatRoom.getBoardIdx())
-                .character(boardUser.getUserIdx().getCharacterIdx())
+                .character(boardUser.getUserIdx().getCharacter())
                 .nickname(boardUser.getUserIdx().getNickname())
                 .chatMessageList(briefChatMessageList)
                 .build();

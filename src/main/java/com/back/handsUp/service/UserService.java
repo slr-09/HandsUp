@@ -1,5 +1,7 @@
 package com.back.handsUp.service;
 
+import static com.back.handsUp.baseResponse.BaseResponseStatus.*;
+
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.Board;
@@ -10,6 +12,7 @@ import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardPreviewRes;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
+import com.back.handsUp.dto.user.UserCharacterDto;
 import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.repository.board.BoardRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
@@ -34,8 +37,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -78,7 +79,7 @@ public class UserService {
 
         Optional<Character> optional1= this.characterRepository.findByCharacterIdx(user.getCharacterIdx());
         if(optional1.isEmpty()){
-            throw new BaseException(BaseResponseStatus.NON_EXIST_CHARACTERIDX);
+            throw new BaseException(NON_EXIST_CHARACTERIDX);
         }
         Character character = optional1.get();
 
@@ -92,7 +93,7 @@ public class UserService {
                 .email(user.getEmail())
                 .password(user.getPassword())
                 .nickname(user.getNickname())
-                .characterIdx(character)
+                .character(character)
                 .schoolIdx(school)
                 .role(Role.ROLE_USER)
                 .build();
@@ -135,9 +136,14 @@ public class UserService {
 
     public void updateChatacter(Long characterIdx, CharacterDto.GetCharacterInfo characterInfo) throws BaseException {
 
+        Optional<Character> optional = this.characterRepository.findByCharacterIdx(characterIdx);
+        if(optional.isEmpty()){
+                throw new BaseException(NON_EXIST_CHARACTERIDX);
+            }
+
         try{
-            Optional<Character> byCharacterIdx = this.characterRepository.findByCharacterIdx(characterIdx);
-            Character findCharacter = byCharacterIdx.get();
+            Character findCharacter = optional.get();
+
             findCharacter.setEye(characterInfo.getEye());
             findCharacter.setBackGroundColor(characterInfo.getBackGroundColor());
             findCharacter.setGlasses(characterInfo.getGlasses());
@@ -320,5 +326,28 @@ public class UserService {
 
     }
 
+    public UserCharacterDto getUserNicknameCharacter(Long userIdx) throws BaseException {
+        Optional<User> optional = userRepository.findByUserIdx(userIdx);
+        if(optional.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+        User user = optional.get();
+        Character character = user.getCharacter();
 
+
+        UserCharacterDto userCharacterDto = UserCharacterDto.builder()
+            .nickname(user.getNickname())
+            .eye(character.getEye())
+            .eyeBrow(character.getEyeBrow())
+            .glasses(character.getGlasses())
+            .nose(character.getNose())
+            .mouth(character.getMouth())
+            .hair(character.getHair())
+            .hairColor(character.getHairColor())
+            .skinColor(character.getSkinColor())
+            .backGroundColor(character.getBackGroundColor())
+            .build();
+
+        return userCharacterDto;
+    }
 }

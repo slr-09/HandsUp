@@ -79,7 +79,7 @@ public class BoardService {
 
             BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
                     .boardIdx(b.getBoardIdx())
-                    .character(boardUser.getUserIdx().getCharacterIdx())
+                    .character(boardUser.getUserIdx().getCharacter())
                     .location(b.getLocation())
                     .build();
 
