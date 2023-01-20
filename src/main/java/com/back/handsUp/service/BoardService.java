@@ -74,7 +74,9 @@ public class BoardService {
 
         for(Board b : getBoards) {
             Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdx(b);
-
+            if(optional.isEmpty()){
+                throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+            }
             BoardUser boardUser = optional.get();
 
             BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
@@ -194,6 +196,39 @@ public class BoardService {
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
+
+    }
+
+
+    //게시물 삭제
+    public void deleteBoard(Principal principal, Long boardIdx) throws BaseException{
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        if(optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+        User userEntity = optional.get();
+
+        Optional<Board> myBoards = this.boardRepository.findByBoardIdx(boardIdx);
+        if(myBoards.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDIDX);
+        }
+        Board myBoardsEntity = myBoards.get();
+
+        Optional<BoardUser> boardUser = this.boardUserRepository.findBoardUserByBoardIdx(myBoardsEntity);
+
+        //해당 게시물을 로그인한 유저가 작성했는지 체크
+        if(!Objects.equals(boardUser.get().getUserIdx().getUserIdx(), userEntity.getUserIdx())){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+        }
+
+        //이미 삭제된 게시물인지 체크
+        if(myBoardsEntity.getStatus().equals("DELETE")){
+            throw new BaseException(BaseResponseStatus.ALREADY_DELETE_BOARD);
+        }
+
+
+        myBoards.get().changeStatus("DELETE");
+
 
     }
 

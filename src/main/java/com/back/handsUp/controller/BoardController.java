@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -89,6 +90,17 @@ public class BoardController {
         try{
             this.boardService.addBoard(principal, boardInfo);
             return new BaseResponse<>("게시글을 등록하였습니다.");
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("/delete/{boardIdx}")
+    public BaseResponse<String> deleteBoard(Principal principal, @PathVariable Long boardIdx){
+        try{
+            this.boardService.deleteBoard(principal, boardIdx);
+            return new BaseResponse<>("게시글을 삭제하였습니다.");
         } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
