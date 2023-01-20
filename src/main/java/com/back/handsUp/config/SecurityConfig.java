@@ -44,10 +44,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
 
-                // 로그인, 회원가입 API 는 토큰이 없는 상태에서 요청이 들어오기 때문에 permitAll 설정
+                // 로그인, 회원가입, 재발급 API 는 토큰이 없는 상태에서 요청이 들어오기 때문에 permitAll 설정
                 .authorizeRequests()
                 .antMatchers("/users/login").permitAll()
                 .antMatchers("/users/signup").permitAll()
+                .antMatchers("/users/reissue").permitAll()
                 .anyRequest().authenticated()  // 나머지 API 는 전부 인증 필요
 
 

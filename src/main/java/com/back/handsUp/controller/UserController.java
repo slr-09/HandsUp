@@ -13,6 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.security.Principal;
 
@@ -101,6 +102,18 @@ public class UserController {
         }catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
 
+        }
+    }
+
+    //액세스 토큰 재발급
+    @ResponseBody
+    @PostMapping("/reissue")
+    public BaseResponse<TokenDto> reissue(@RequestBody TokenDto token, HttpServletRequest request) {
+        try {
+            TokenDto newToken = this.userService.reissue(token, request);
+            return new BaseResponse<>(newToken);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
         }
     }
 }

@@ -28,6 +28,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.security.Principal;
 import java.util.List;
@@ -163,9 +164,9 @@ public class UserService {
         return tokenDto;
     }
 
-    public TokenDto reissue(TokenDto tokenRequestDto) { //재발급
+    public TokenDto reissue(TokenDto tokenRequestDto, HttpServletRequest request) throws BaseException { //재발급
         // 1. Refresh Token 검증
-        if (!this.tokenProvider.validateToken(tokenRequestDto.getRefreshToken())) {
+        if (!this.tokenProvider.validateToken(tokenRequestDto.getRefreshToken(), request)) {
             throw new RuntimeException("Refresh Token 이 유효하지 않습니다.");
         }
 
