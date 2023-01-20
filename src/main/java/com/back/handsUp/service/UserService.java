@@ -131,7 +131,37 @@ public class UserService {
 
         token.setValue("");
 
+    }
 
+    public void updateChatacter(Long characterIdx, CharacterDto.GetCharacterInfo characterInfo) throws BaseException {
+
+        try{
+            Optional<Character> byCharacterIdx = this.characterRepository.findByCharacterIdx(characterIdx);
+            Character findCharacter = byCharacterIdx.get();
+            findCharacter.setEye(characterInfo.getEye());
+            findCharacter.setBackGroundColor(characterInfo.getBackGroundColor());
+            findCharacter.setGlasses(characterInfo.getGlasses());
+            findCharacter.setHair(characterInfo.getHair());
+            findCharacter.setEyeBrow(characterInfo.getEyeBrow());
+            findCharacter.setHairColor(characterInfo.getHairColor());
+            findCharacter.setMouth(characterInfo.getMouth());
+            findCharacter.setNose(characterInfo.getNose());
+            findCharacter.setSkinColor(characterInfo.getSkinColor());
+
+        } catch (Exception e) {
+            throw new BaseException(DATABASE_INSERT_ERROR);
+        }
+    }
+
+    public void updateNickname(Long userIdx, String nickname) throws BaseException {
+
+        try{
+            Optional<User> byUserIdx = this.userRepository.findByUserIdx(userIdx);
+            User findUser = byUserIdx.get();
+            findUser.setNickname(nickname);
+        } catch (Exception e) {
+            throw new BaseException(DATABASE_INSERT_ERROR);
+        }
     }
 
 
