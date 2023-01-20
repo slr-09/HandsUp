@@ -48,12 +48,12 @@ public class BoardService {
 
     //전체 게시물 조회
     public List<Board> showBoardList() throws BaseException {
-        long boardNum = boardRepository.count();
-        if (boardNum==0){
-            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARD_LIST);
-        }
+//        long boardNum = boardRepository.count();
+//        if (boardNum==0){
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARD_LIST);
+//        }
         try {
-            List<Board> getBoards = boardRepository.findAll();
+            List<Board> getBoards = boardRepository.findBoardByStatus("ACTIVE");
 
             return getBoards;
         } catch (Exception exception) {

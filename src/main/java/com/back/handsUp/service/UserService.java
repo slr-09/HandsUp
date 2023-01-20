@@ -281,8 +281,12 @@ public class UserService {
             board.changeStatus("DEL_USER");
         }
 
+        UserDto.ReqWithdraw response = UserDto.ReqWithdraw.builder()
+                .userIdx(userIdx)
+                .build();
 
-        return userEntity1.userBoards();
+
+        return response;
 
     }
 
