@@ -28,7 +28,7 @@ public class UserDto {
         private String nickname;
 
         private Long characterIdx;
-        private Long schoolIdx;
+        private String schoolName;
     }
 
     @Getter

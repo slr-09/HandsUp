@@ -82,11 +82,17 @@ public class UserService {
         }
         Character character = optional1.get();
 
-        Optional<School> optional2= this.schoolRepository.findBySchoolIdx(user.getSchoolIdx());
+        Optional<School> optional2= this.schoolRepository.findByName(user.getSchoolName());
+        School school;
+
         if(optional2.isEmpty()){
-            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLIDX);
+            school=School.builder()
+                    .name(user.getSchoolName())
+                    .build();
+            this.schoolRepository.save(school);
+        } else{
+            school = optional2.get();
         }
-        School school = optional2.get();
 
         User userEntity = User.builder()
                 .email(user.getEmail())
