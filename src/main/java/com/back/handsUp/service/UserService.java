@@ -2,13 +2,17 @@ package com.back.handsUp.service;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.domain.jwt.RefreshToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
+import com.back.handsUp.dto.board.BoardPreviewRes;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserDto;
+import com.back.handsUp.repository.board.BoardRepository;
+import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.user.CharacterRepository;
 import com.back.handsUp.repository.user.SchoolRepository;
 import com.back.handsUp.repository.user.UserRepository;
@@ -16,6 +20,7 @@ import com.back.handsUp.repository.user.jwt.RefreshTokenRepository;
 import com.back.handsUp.utils.Role;
 import com.back.handsUp.utils.TokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -25,7 +30,10 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
@@ -37,6 +45,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final CharacterRepository characterRepository;
     private final SchoolRepository schoolRepository;
+    private final BoardUserRepository boardUserRepository;
+
+    private final BoardService boardService;
 
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
@@ -107,6 +118,24 @@ public class UserService {
         }
     }
 
+    public void logOut(Principal principal) throws BaseException {
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        if(optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+        User userEntity = optional.get();
+
+        Optional<RefreshToken> optional1 = this.refreshTokenRepository.findByKeyId(userEntity.getEmail());
+
+        RefreshToken token = optional1.get();
+
+        token.setValue("");
+
+
+    }
+
+
+
     public TokenDto token(UserDto.ReqLogIn user){
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
 
@@ -158,7 +187,7 @@ public class UserService {
     }
 
     //캐릭터 생성
-    public void createCharacter(CharacterDto.GetCharacterInfo characterInfo) throws BaseException{
+    public Character createCharacter(CharacterDto.GetCharacterInfo characterInfo) throws BaseException{
 
         //not null 값이 null로 들어온 경우
         if(characterInfo.getEye().isBlank() || characterInfo.getEyeBrow().isBlank() || characterInfo.getHair().isBlank() ||
@@ -181,12 +210,14 @@ public class UserService {
 
         try{
             this.characterRepository.save(characterEntity);
+            return characterEntity;
 
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
 
     }
+
 
     //비밀번호 변경
     public void patchPwd(Principal principal, UserDto.ReqPwd userPwd) throws BaseException{
@@ -210,6 +241,47 @@ public class UserService {
         } else{
             throw new BaseException(BaseResponseStatus.INVALID_PASSWORD);
         }
+
+
+    //회원 탈퇴 (patch)
+    public UserDto.ReqWithdraw withdrawUser(Principal principal, Long userIdx)  throws BaseException{
+
+
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+
+        Optional<User> optional2 = this.userRepository.findByUserIdx(userIdx);
+
+        if(optional.isEmpty() || optional2.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+
+        User userEntity1 = optional.get();
+        User userEntity2 = optional2.get();
+
+        if(userEntity1!=userEntity2){
+            throw new BaseException(BaseResponseStatus.NON_CORRESPOND_USER);
+        }
+
+        if(userEntity1.getStatus().equals("DELETE")){
+            throw new BaseException(BaseResponseStatus.ALREADY_DELETE_USER);
+        }else{
+            userEntity1.changeStatus("DELETE");
+        }
+
+        try{
+            this.userRepository.save(userEntity1);
+        }catch (Exception e) {
+            throw new BaseException(DATABASE_INSERT_ERROR);
+        }
+
+        //게시물 상태 변경
+        List<Board> myBoards = this.boardUserRepository.findBoardIdxByUserIdxAndStatus(userEntity1, "WRITE");
+        for(Board board: myBoards){
+            board.changeStatus("DEL_USER");
+        }
+
+
+        return userEntity1.userBoards();
 
     }
 
