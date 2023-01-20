@@ -7,6 +7,7 @@ import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserDto;
+import com.back.handsUp.dto.user.UserNicknameDto;
 import com.back.handsUp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
@@ -101,6 +102,27 @@ public class UserController {
         }catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
 
+        }
+    }
+
+    @PatchMapping("/nickname")
+    public BaseResponse<String> updateUsername(@RequestBody UserNicknameDto userNicknameDto){
+
+        try{
+            userService.updateNickname(userNicknameDto.getUserIdx(), userNicknameDto.getNickname());
+            return new BaseResponse<>("닉네임을 수정하였습니다.");
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @PatchMapping("/character/{characterIdx}")
+    public BaseResponse<String> updateCharacter(@PathVariable Long characterIdx, @RequestBody CharacterDto.GetCharacterInfo characterInfo){
+        try{
+            userService.updateChatacter(characterIdx, characterInfo);
+            return new BaseResponse<>("캐릭터를 수정하였습니다.");
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
         }
     }
 }
