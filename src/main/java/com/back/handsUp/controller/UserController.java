@@ -81,12 +81,15 @@ public class UserController {
 
     @ResponseBody
     @PatchMapping("/password")
-    public BaseResponse<String> changePwd(Principal principal, @RequestBody UserDto.ReqPwd userPwd){
+    public BaseResponse<String> changePwd(Principal principal, @RequestBody UserDto.ReqPwd userPwd) {
         try {
             this.userService.patchPwd(principal, userPwd);
             return new BaseResponse<>("비밀번호 변경이 완료되었습니다.");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
+
+        }
+    }
 
     //회원 탈퇴
     @ResponseBody
