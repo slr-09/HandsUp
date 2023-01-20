@@ -3,6 +3,7 @@ package com.back.handsUp.repository.board;
 import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.domain.board.BoardUser;
 import com.back.handsUp.domain.user.User;
+import com.back.handsUp.dto.board.BoardDto;
 import com.back.handsUp.mapper.BoardMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -43,6 +44,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     @Query("select b from Board b where b.status = ?1")
     List<Board> findBoardByStatus(String status);
+
 
 
 }
