@@ -308,7 +308,7 @@ public class UserService {
         //게시물 상태 변경
         List<Board> myBoards = this.boardUserRepository.findBoardIdxByUserIdxAndStatus(userEntity1, "WRITE");
         for(Board board: myBoards){
-            board.changeStatus("DEL_USER");
+            board.changeStatus("DELETE");
         }
 
         UserDto.ReqWithdraw response = UserDto.ReqWithdraw.builder()
