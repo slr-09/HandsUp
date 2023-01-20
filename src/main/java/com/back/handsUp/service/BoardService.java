@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -119,6 +120,33 @@ public class BoardService {
             throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
         }
 
+    }
+
+    //전체 게시물(지도 상) 조회
+    // 캐릭터, 위치(Board), boardIdx
+    public List<BoardDto.GetBoardMap> showBoardMapList() throws BaseException {
+
+        List<Board> getBoards = boardRepository.findBoardByStatus("ACTIVE");
+
+        List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
+
+
+        for(Board b : getBoards) {
+            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdx(b);
+
+            BoardUser boardUser = optional.get();
+
+            BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
+                    .boardIdx(b.getBoardIdx())
+                    .character(boardUser.getUserIdx().getCharacterIdx())
+                    .location(b.getLocation())
+                    .build();
+
+            getBoardsMapList.add(getBoardMap);
+        }
+
+
+        return getBoardsMapList;
     }
 
     public void likeBoard(Principal principal, Long boardIdx) throws BaseException {

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import com.back.handsUp.domain.user.Character;
 import java.util.List;
 
 @NoArgsConstructor
@@ -19,6 +20,16 @@ public class BoardDto {
         private String content;
         private String tag;
         private int messageDuration;
+    }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class GetBoardMap {
+        private Long boardIdx;
+        private Character character;
+        private String location;
     }
 
     @Getter

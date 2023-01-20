@@ -50,6 +50,18 @@ public class BoardController {
         }
     }
 
+    //전체 게시물(지도 상) 조회
+    @ResponseBody
+    @GetMapping("/showMapList")
+    public BaseResponse<List<BoardDto.GetBoardMap>> showBoardMapList(){
+        try {
+            List<BoardDto.GetBoardMap> getBoardsMap = boardService.showBoardMapList();
+            return new BaseResponse<>(getBoardsMap);
+        }catch (BaseException exception){
+            return new BaseResponse<>((exception.getStatus()));
+        }
+    }
+
     @PostMapping("/{boardIdx}/like")
     public BaseResponse<String> like(Principal principal,@PathVariable Long boardIdx) {
         try{
