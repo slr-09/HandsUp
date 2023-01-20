@@ -6,12 +6,12 @@ import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
+import com.back.handsUp.dto.user.UserCharacterDto;
 import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.dto.user.UserNicknameDto;
 import com.back.handsUp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -122,6 +122,17 @@ public class UserController {
             userService.updateChatacter(characterIdx, characterInfo);
             return new BaseResponse<>("캐릭터를 수정하였습니다.");
         } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @GetMapping("/{userIdx}")
+    public BaseResponse<UserCharacterDto> getNicknameAndCharacter(@PathVariable Long userIdx){
+        try {
+            UserCharacterDto userCharacterDto = userService.getUserNicknameCharacter(userIdx);
+            return new BaseResponse<>(userCharacterDto);
+
+        } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
     }
