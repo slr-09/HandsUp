@@ -39,6 +39,14 @@ public enum BaseResponseStatus {
 
     NON_EXIST_CHARACTER_VALUE(false,4031,"캐릭터 생성에 필요한 값이 모두 입력되지 않았습니다."),
 
+    REFRESH_TOKEN_ERROR(false,4040,"Refresh Token이 유효하지 않습니다."),
+    LOGOUT_USER(false,4041,"로그아웃된 사용자입니다."),
+    NOT_MATCH_TOKEN(false,4042,"토큰의 유저 정보가 일치하지 않습니다."),
+    MALFORMED_JWT(false,4043,"잘못된 JWT 서명입니다."),
+    EXPIRED_JWT(false,4044,"만료된 JWT 토큰입니다."),
+    UNSUPPORTED_JWT(false,4045,"지원되지 않는 JWT 토큰입니다."),
+    ILLEGAL_JWT(false,4046,"JWT 토큰이 잘못되었습니다."),
+    JWT_ERROR(false,4047,"JWT 토큰에 오류가 발생했습니다."),
 
 
     /**
