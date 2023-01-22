@@ -42,6 +42,10 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+jar {
+	enabled = false
+}
 //
 //bootJar {
 //	mainClassName = 'com.back.handsUp.HandsUpApplication'
