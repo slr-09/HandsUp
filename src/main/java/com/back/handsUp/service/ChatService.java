@@ -3,13 +3,11 @@ package com.back.handsUp.service;
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.BoardUser;
-import com.back.handsUp.domain.chat.ChatMessage;
 import com.back.handsUp.domain.chat.ChatRoom;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.chat.ChatDto;
 import com.back.handsUp.repository.board.BoardUserRepository;
-import com.back.handsUp.repository.chat.ChatMessageRepository;
 import com.back.handsUp.repository.chat.ChatRoomRepository;
 import com.back.handsUp.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +16,6 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,7 +23,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional
 public class ChatService {
-    private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
     private final BoardUserRepository boardUserRepository;
@@ -54,9 +49,9 @@ public class ChatService {
 
         Character character;
         if(loginUser.equals(boardUser.getUserIdx())){
-            character = chatRoom.getUserIdx().getCharacterIdx();
+            character = chatRoom.getUserIdx().getCharacter();
         } else {
-            character = boardUser.getUserIdx().getCharacterIdx();
+            character = boardUser.getUserIdx().getCharacter();
         }
 
         ChatDto.ResChat resChat = ChatDto.ResChat.builder()
