@@ -32,12 +32,15 @@ public enum BaseResponseStatus {
     NON_EXIST_CHATROOMIDX(false, 4017, "채팅방이 존재하지 않습니다."),
     ALREADY_DELETE_USER(false, 4017, "이미 탈퇴한 회원입니다."),
     NON_CORRESPOND_USER(false, 4018, "userIdx가 로그인한 유저와 일치하지 않습니다."),
+    ALREADY_DELETE_BOARD(false, 4020, "이미 삭제된 게시물입니다."),
 
 
     LOCATION_ERROR(false, 4021, "위치정보에 오류가 발생했습니다."),
     MESSAGEDURATION_ERROR(false, 4022, "메세지 지속시간에 오류가 발생했습니다."),
 
     NON_EXIST_CHARACTER_VALUE(false,4031,"캐릭터 생성에 필요한 값이 모두 입력되지 않았습니다."),
+
+    NON_EXIST_TAG_VALUE(false,4032,"유효하지 않은 테그값입니다."),
 
     REFRESH_TOKEN_ERROR(false,4040,"Refresh Token이 유효하지 않습니다."),
     LOGOUT_USER(false,4041,"로그아웃된 사용자입니다."),

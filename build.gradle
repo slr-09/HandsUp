@@ -45,3 +45,16 @@ tasks.named('test') {
 	useJUnitPlatform()
 	systemProperty 'jasypt.encryptor.password', findProperty("jasypt.encryptor.password")
 }
+
+jar {
+	enabled = false
+}
+//
+//bootJar {
+//	mainClassName = 'com.back.handsUp.HandsUpApplication'
+//}
+//
+//bootRun {
+//	String activeProfile = System.properties['spring.profiles.active']
+//	systemProperty "spring.profiles.active", activeProfile
+//}

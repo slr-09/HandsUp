@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,28 +39,116 @@ public class BoardService {
     private final FirebaseCloudMessageService firebaseCloudMessageService;
 
 
-    public Board boardViewByIdx(Long boardIdx) throws BaseException {
-        Optional<Board> optional = this.boardRepository.findByBoardIdx(boardIdx);
-        if(optional.isEmpty()){
+    //단일 게시물 조회
+    public BoardDto.SingleBoardRes boardViewByIdx(Principal principal, Long boardIdx) throws BaseException {
+
+        //조회하는 유저
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User user = optionalUser.get();
+
+        //조회하는 게시물
+        Optional<Board> optionalBoard = this.boardRepository.findByBoardIdx(boardIdx);
+        if(optionalBoard.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDIDX);
         }
-        return optional.get();
+        Board board = optionalBoard.get();
+
+
+        String locationInfo;
+        //위치 정보 동의하면 locationInfo 에 위치 담기
+        if (Objects.equals(board.getIndicateLocation(), "Y")) {
+            locationInfo = board.getLocation();
+        } else {
+            locationInfo = "위치 비밀";
+        }
+
+        //like 확인
+        Optional<BoardUser> optionalBoardUserEntity = boardUserRepository.findBoardUserByBoardIdxAndUserIdx(board, user);
+
+        String didLike;
+        if(optionalBoardUserEntity.isEmpty()){
+            didLike = "false";
+        }else {
+            BoardUser boardUserEntity = optionalBoardUserEntity.get();
+            didLike = boardUserEntity.getStatus();
+        }
+
+        //like 눌렀을 때만 true 반환
+        if (Objects.equals(didLike, "LIKE")) {
+            didLike = "true";
+        }
+
+        //게시글 작성자
+        Optional<User> optionalBoardUser = this.boardUserRepository.findUserIdxByBoardIdxAndStatus(boardIdx, "WRITE");
+        if(optionalBoardUser.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+        }
+        User boardUser = optionalBoardUser.get();
+
+        //태그
+        Optional<Tag> optionalTag = this.boardTagRepository.findTagIdxByBoardIdx(boardIdx);
+        if(optionalTag.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_TAG_VALUE);
+        }
+        Tag tag = optionalTag.get();
+
+        return BoardDto.SingleBoardRes.builder()
+                .content(board.getContent())
+                .tag(tag.getName())
+                .nickname(boardUser.getNickname())
+                .messageDuration(board.getMessageDuration())
+                .location(locationInfo)
+                .didLike(didLike)
+                .createdAt(board.getCreatedAt()).build();
     }
 
     //전체 게시물 조회
     public List<Board> showBoardList() throws BaseException {
-        long boardNum = boardRepository.count();
-        if (boardNum==0){
-            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARD_LIST);
-        }
+//        long boardNum = boardRepository.count();
+//        if (boardNum==0){
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARD_LIST);
+//        }
         try {
-            List<Board> getBoards = boardRepository.findAll();
+            List<Board> getBoards = boardRepository.findBoardByStatus("ACTIVE");
 
             return getBoards;
         } catch (Exception exception) {
             throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
         }
 
+    }
+
+    //전체 게시물(지도 상) 조회
+    // 캐릭터, 위치(Board), boardIdx
+    public List<BoardDto.GetBoardMap> showBoardMapList() throws BaseException {
+
+        List<Board> getBoards = boardRepository.findBoardByStatus("ACTIVE");
+
+        List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
+
+
+        for(Board b : getBoards) {
+            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdx(b);
+            if(optional.isEmpty()){
+                throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+            }
+            BoardUser boardUser = optional.get();
+
+            BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
+                    .boardIdx(b.getBoardIdx())
+                    .character(boardUser.getUserIdx().getCharacter())
+                    .location(b.getLocation())
+                    .build();
+
+            getBoardsMapList.add(getBoardMap);
+        }
+
+
+        return getBoardsMapList;
     }
 
     public void likeBoard(Principal principal, Long boardIdx) throws BaseException {
@@ -166,6 +255,39 @@ public class BoardService {
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
+
+    }
+
+
+    //게시물 삭제
+    public void deleteBoard(Principal principal, Long boardIdx) throws BaseException{
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        if(optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+        User userEntity = optional.get();
+
+        Optional<Board> myBoards = this.boardRepository.findByBoardIdx(boardIdx);
+        if(myBoards.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDIDX);
+        }
+        Board myBoardsEntity = myBoards.get();
+
+        Optional<BoardUser> boardUser = this.boardUserRepository.findBoardUserByBoardIdx(myBoardsEntity);
+
+        //해당 게시물을 로그인한 유저가 작성했는지 체크
+        if(!Objects.equals(boardUser.get().getUserIdx().getUserIdx(), userEntity.getUserIdx())){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+        }
+
+        //이미 삭제된 게시물인지 체크
+        if(myBoardsEntity.getStatus().equals("DELETE")){
+            throw new BaseException(BaseResponseStatus.ALREADY_DELETE_BOARD);
+        }
+
+
+        myBoards.get().changeStatus("DELETE");
+
 
     }
 

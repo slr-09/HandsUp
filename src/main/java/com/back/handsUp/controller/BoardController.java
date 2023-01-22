@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -33,8 +34,8 @@ public class BoardController {
 
 
     @GetMapping("/singleList/{boardIdx}")
-    public BaseResponse<Board> BoardViewByIdx(@PathVariable("boardIdx") Long boardIdx) throws BaseException {
-        Board board = boardService.boardViewByIdx(boardIdx);
+    public BaseResponse<BoardDto.SingleBoardRes> BoardViewByIdx(Principal principal, @PathVariable("boardIdx") Long boardIdx) throws BaseException {
+        BoardDto.SingleBoardRes board = boardService.boardViewByIdx(principal, boardIdx);
         return new BaseResponse<>(board);
     }
 
@@ -45,6 +46,18 @@ public class BoardController {
         try {
             List<Board> getBoards = boardService.showBoardList();
             return new BaseResponse<>(getBoards);
+        }catch (BaseException exception){
+            return new BaseResponse<>((exception.getStatus()));
+        }
+    }
+
+    //전체 게시물(지도 상) 조회
+    @ResponseBody
+    @GetMapping("/showMapList")
+    public BaseResponse<List<BoardDto.GetBoardMap>> showBoardMapList(){
+        try {
+            List<BoardDto.GetBoardMap> getBoardsMap = boardService.showBoardMapList();
+            return new BaseResponse<>(getBoardsMap);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
         }
@@ -77,6 +90,17 @@ public class BoardController {
         try{
             this.boardService.addBoard(principal, boardInfo);
             return new BaseResponse<>("게시글을 등록하였습니다.");
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("/delete/{boardIdx}")
+    public BaseResponse<String> deleteBoard(Principal principal, @PathVariable Long boardIdx){
+        try{
+            this.boardService.deleteBoard(principal, boardIdx);
+            return new BaseResponse<>("게시글을 삭제하였습니다.");
         } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
