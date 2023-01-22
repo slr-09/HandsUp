@@ -53,8 +53,8 @@ public enum BaseResponseStatus {
      * 5000번대 서버 에러
      */
     DATABASE_INSERT_ERROR(false, 5000, "데이터베이스 저장 오류가 발생했습니다."),
-    PASSWORD_ENCRYPTION_ERROR(false, 5001, "비밀번호 암호화 오류가 발생했습니다.");
-
+    PASSWORD_ENCRYPTION_ERROR(false, 5001, "비밀번호 암호화 오류가 발생했습니다."),
+    EMAIL_SEND_ERROR(false, 5002, "이메일 인증번호 발송에 오류가 발생했습니다.");
 
     private final boolean isSuccess;
     private final int statusCode;

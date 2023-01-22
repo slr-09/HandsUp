@@ -7,10 +7,10 @@ import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserDto;
+import com.back.handsUp.service.MailService;
 import com.back.handsUp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +22,7 @@ import java.security.Principal;
 @RequestMapping(value = "/users")
 public class UserController {
     private final UserService userService;
+    private final MailService mailService;
 
     @ResponseBody
     @PostMapping("/signup")
@@ -112,6 +113,18 @@ public class UserController {
         try {
             TokenDto newToken = this.userService.reissue(token, request);
             return new BaseResponse<>(newToken);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    //학교 인증
+    @ResponseBody
+    @PostMapping("/certify")
+    public BaseResponse<String> certify(@RequestBody UserDto.ResEmail resEmail){
+        try {
+            String code = this.mailService.sendMail(resEmail.getEmail());
+            return new BaseResponse<>(code);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }

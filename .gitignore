@@ -38,3 +38,6 @@ out/
 
 ###
 src/main/resources/firebase/handsup-c4213-firebase-adminsdk-cecbd-589582696c.json
+
+### Naver Mail Password (jasypt-encryptor-password) ###
+src/main/resources/jasypt/jasypt-encryptor-password.txt

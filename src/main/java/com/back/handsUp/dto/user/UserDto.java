@@ -60,4 +60,12 @@ public class UserDto {
         private Long userIdx;
     }
 
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    public static class ResEmail {
+        private String email;
+    }
+
 }
