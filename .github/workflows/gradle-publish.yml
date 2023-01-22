@@ -47,9 +47,9 @@ jobs:
 #        run: echo $OCCUPY_SECRET | base64 -di > $OCCUPY_SECRET_DIR/$OCCUPY_SECRET_DIR_FILE_NAME
 
       - uses: actions/checkout@v3
-      - run: touch /src/main/resources/jasypt/jasypt-encryptor-password.txt
-      - run: echo "${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}" > /src/main/resources/jasypt/jasypt-encryptor-password.txt
-      - run: cat /src/main/resources/jasypt/jasypt-encryptor-password.txt
+      - run: touch ./src/main/resources/application.properties
+      - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
+      - run: cat ./src/main/resources/application.properties
       
       # (3) Gradle build (Test 제외)
       - name: Build with Gradle
