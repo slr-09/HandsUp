@@ -8,12 +8,14 @@ import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserCharacterDto;
 import com.back.handsUp.dto.user.UserDto;
+import com.back.handsUp.service.MailService;
 import com.back.handsUp.dto.user.UserNicknameDto;
 import com.back.handsUp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.security.Principal;
 
@@ -22,6 +24,7 @@ import java.security.Principal;
 @RequestMapping(value = "/users")
 public class UserController {
     private final UserService userService;
+    private final MailService mailService;
 
     @ResponseBody
     @PostMapping("/signup")
@@ -102,6 +105,30 @@ public class UserController {
         }catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
 
+        }
+    }
+
+    //액세스 토큰 재발급
+    @ResponseBody
+    @PostMapping("/reissue")
+    public BaseResponse<TokenDto> reissue(@RequestBody TokenDto token, HttpServletRequest request) {
+        try {
+            TokenDto newToken = this.userService.reissue(token, request);
+            return new BaseResponse<>(newToken);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    //학교 인증
+    @ResponseBody
+    @PostMapping("/certify")
+    public BaseResponse<String> certify(@RequestBody UserDto.ResEmail resEmail){
+        try {
+            String code = this.mailService.sendMail(resEmail.getEmail());
+            return new BaseResponse<>(code);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
         }
     }
 
