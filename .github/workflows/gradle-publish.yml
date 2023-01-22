@@ -46,61 +46,31 @@ jobs:
         with:
           arguments: clean build -x test
 
-      # (4) 압축 파일 만들기
-      - name: Make Zip File
-        run: zip -qq -r ./springboot-intro-build.zip .
-        shell: bash
 
-      # (5) 권한 부여
+      # (4) 권한 부여
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
-
-      # (6) S3 Bucket으로 copy
-      - name: Deliver to AWS S3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
+          
+          
+      # (5) 빌드 결과물을 S3 버킷에 업로드
+      - name: Upload to AWS S3
         run: |
-          aws s3 cp \
-          --region ap-northeast-2 \
-          --acl private \
-          ./springboot-intro-build.zip s3://$S3_BUCKET_NAME/
-
-
-      # Deploy
-      - name: Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws deploy push \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --ignore-hidden-files \
+            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+            --source .
+      
+      # (6) S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
+      - name: Deploy to AWS EC2 from S3
         run: |
           aws deploy create-deployment \
           --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+          --deployment-config-name CodeDeployDefault.AllAtOnce \
           --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-          --file-exists-behavior OVERWRITE \
-          --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip \
-          --region ap-northeast-2
-
-
-#     (5) 빌드 결과물을 S3 버킷에 업로드
-#        - name: Upload to AWS S3
-#          run: |
-#            aws deploy push \
-#              --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-#              --ignore-hidden-files \
-#              --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
-#              --source .
-
-
-    # (6) S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
-#    - name: Deploy to AWS EC2 from S3
-#      run: |
-#        aws deploy create-deployment \
-#          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-#          --deployment-config-name CodeDeployDefault.AllAtOnce \
-#          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-#          --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
-
+          --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
