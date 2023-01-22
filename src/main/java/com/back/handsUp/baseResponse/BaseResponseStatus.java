@@ -30,8 +30,9 @@ public enum BaseResponseStatus {
     NON_EXIST_BOARDUSERIDX(false, 4015, "유저가 작성한 게시물이 아닙니다."),
     NON_EXIST_BOARD_LIST(false, 4016, "게시물이 존재하지 않습니다."),
     NON_EXIST_CHATROOMIDX(false, 4017, "채팅방이 존재하지 않습니다."),
-
-
+    ALREADY_DELETE_USER(false, 4017, "이미 탈퇴한 회원입니다."),
+    NON_CORRESPOND_USER(false, 4018, "userIdx가 로그인한 유저와 일치하지 않습니다."),
+    ALREADY_DELETE_BOARD(false, 4020, "이미 삭제된 게시물입니다."),
 
 
     LOCATION_ERROR(false, 4021, "위치정보에 오류가 발생했습니다."),
@@ -39,14 +40,24 @@ public enum BaseResponseStatus {
 
     NON_EXIST_CHARACTER_VALUE(false,4031,"캐릭터 생성에 필요한 값이 모두 입력되지 않았습니다."),
 
+    NON_EXIST_TAG_VALUE(false,4032,"유효하지 않은 테그값입니다."),
+
+    REFRESH_TOKEN_ERROR(false,4040,"Refresh Token이 유효하지 않습니다."),
+    LOGOUT_USER(false,4041,"로그아웃된 사용자입니다."),
+    NOT_MATCH_TOKEN(false,4042,"토큰의 유저 정보가 일치하지 않습니다."),
+    MALFORMED_JWT(false,4043,"잘못된 JWT 서명입니다."),
+    EXPIRED_JWT(false,4044,"만료된 JWT 토큰입니다."),
+    UNSUPPORTED_JWT(false,4045,"지원되지 않는 JWT 토큰입니다."),
+    ILLEGAL_JWT(false,4046,"JWT 토큰이 잘못되었습니다."),
+    JWT_ERROR(false,4047,"JWT 토큰에 오류가 발생했습니다."),
 
 
     /**
      * 5000번대 서버 에러
      */
     DATABASE_INSERT_ERROR(false, 5000, "데이터베이스 저장 오류가 발생했습니다."),
-    PASSWORD_ENCRYPTION_ERROR(false, 5001, "비밀번호 암호화 오류가 발생했습니다.");
-
+    PASSWORD_ENCRYPTION_ERROR(false, 5001, "비밀번호 암호화 오류가 발생했습니다."),
+    EMAIL_SEND_ERROR(false, 5002, "이메일 인증번호 발송에 오류가 발생했습니다.");
 
     private final boolean isSuccess;
     private final int statusCode;

@@ -2,6 +2,7 @@ package com.back.handsUp.domain.user;
 
 import com.back.handsUp.baseResponse.BaseEntity;
 import com.back.handsUp.domain.board.Board;
+import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.utils.Role;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,12 +35,12 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 15)
     private String nickname;
 
-    @Column(columnDefinition="date default (current_date)")
+    @Column(columnDefinition="date default (current_date)", updatable = false)
     private Date nicknameUpdatedAt;
 
     @OneToOne
     @JoinColumn(name = "characterIdx")
-    private Character characterIdx;
+    private Character character;
 
     @OneToOne
     @JoinColumn(name = "schoolIdx")
@@ -54,15 +55,21 @@ public class User extends BaseEntity {
 
 
     @Builder
-    public User(String email, String password, String nickname, Date nicknameUpdatedAt, Character characterIdx, School schoolIdx, String status, Role role) {
+    public User(String email, String password, String nickname, Date nicknameUpdatedAt, Character character, School schoolIdx, String status, Role role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.nicknameUpdatedAt = nicknameUpdatedAt;
-        this.characterIdx = characterIdx;
+        this.character = character;
         this.schoolIdx = schoolIdx;
         this.status = status;
         this.role = role;
+    }
+
+    public UserDto.ReqWithdraw userBoards() {
+        return UserDto.ReqWithdraw.builder()
+                .userIdx(this.userIdx)
+                .build();
     }
 
     public void changeStatus (String newStatus) {

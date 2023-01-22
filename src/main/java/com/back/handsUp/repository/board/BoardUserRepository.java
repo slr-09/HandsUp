@@ -21,5 +21,6 @@ public interface BoardUserRepository extends JpaRepository<BoardUser, Long> {
     Optional<User> findUserIdxByBoardIdxAndStatus(Long boardIdx, String status);
 
     Optional<BoardUser> findBoardUserByBoardIdxAndUserIdx(Board boardIdx, User userIdx);
+
 }
 

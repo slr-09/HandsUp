@@ -24,7 +24,7 @@ public class UserDto {
         private String nickname;
 
         private Long characterIdx;
-        private Long schoolIdx;
+        private String schoolName;
     }
 
     @Getter
@@ -40,11 +40,27 @@ public class UserDto {
         private String password;
     }
 
-    @Getter
+ 
     @AllArgsConstructor
     @Builder
+    @Getter
     public static class ReqPwd {
         private String currentPwd;
         private String newPwd;
     }
+
+    @Builder
+    public static class ReqWithdraw {
+
+        private Long userIdx;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    public static class ResEmail {
+        private String email;
+    }
+
 }

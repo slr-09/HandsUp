@@ -16,21 +16,10 @@ public class ChatDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class ResChatMessageList {
+    public static class ResChat {
         private Board board;
         private Character character;
         private String nickname;
-        private List<BriefChatMessage> chatMessageList;
     }
 
-    @Getter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Builder
-    public static class BriefChatMessage {
-        private Long chatMessageIdx;
-        private Long userIdx; //메세지를 보낸 유저 (A->B이면 A)
-        private String chatContents;
-        private LocalDateTime createdAt;
-    }
 }

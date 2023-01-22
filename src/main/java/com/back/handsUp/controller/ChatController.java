@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,10 +22,10 @@ public class ChatController {
     //채팅 메세지 조회
     @ResponseBody
     @GetMapping("/{chatRoomIdx}")
-    public BaseResponse<ChatDto.ResChatMessageList> getChatMessages(Principal principal, @PathVariable Long chatRoomIdx){
+    public BaseResponse<ChatDto.ResChat> getChatMessages(Principal principal, @PathVariable Long chatRoomIdx){
         try {
-            ChatDto.ResChatMessageList resChatMessageList = this.chatService.getChatMessages(principal,chatRoomIdx);
-            return new BaseResponse<>(resChatMessageList);
+            ChatDto.ResChat resChat = this.chatService.getChatInfo(principal,chatRoomIdx);
+            return new BaseResponse<>(resChat);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
         }
