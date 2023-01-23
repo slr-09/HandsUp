@@ -19,13 +19,13 @@ import java.security.Principal;
 public class ChatController {
     private final ChatService chatService;
 
-    //채팅 메세지 조회
+    //채팅방 내 게시물 미리보기
     @ResponseBody
     @GetMapping("/{chatRoomIdx}")
-    public BaseResponse<ChatDto.ResChat> getChatMessages(Principal principal, @PathVariable Long chatRoomIdx){
+    public BaseResponse<ChatDto.ResChatRoom> getChatMessages(Principal principal, @PathVariable Long chatRoomIdx){
         try {
-            ChatDto.ResChat resChat = this.chatService.getChatInfo(principal,chatRoomIdx);
-            return new BaseResponse<>(resChat);
+            ChatDto.ResChatRoom resChatRoom = this.chatService.getChatInfo(principal,chatRoomIdx);
+            return new BaseResponse<>(resChatRoom);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
         }
