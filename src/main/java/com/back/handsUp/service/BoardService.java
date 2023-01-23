@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -107,29 +109,36 @@ public class BoardService {
     }
 
     //전체 게시물 조회
-    public List<Board> showBoardList() throws BaseException {
-//        long boardNum = boardRepository.count();
-//        if (boardNum==0){
-//            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARD_LIST);
-//        }
-        try {
-            List<Board> getBoards = boardRepository.findBoardByStatus("ACTIVE");
+    public List<Board> showBoardList(Principal principal) throws BaseException {
 
-            return getBoards;
-        } catch (Exception exception) {
-            throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
-        }
+        List<Board> getBoards = getBoards(principal);
+
+//        List<Board> getSchoolBoards = new ArrayList<>();
+
+//        for(Board b : getStatusBoards){
+//            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdx(b);
+//            if(optional.isEmpty()){
+//                throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+//            }
+//            BoardUser boardUser = optional.get();
+//            if(boardUser.getUserIdx().getSchoolIdx()==user.getSchoolIdx()){
+//                getSchoolBoards.add(b);
+//            }
+//
+//        }
+
+
+        return getBoards;
 
     }
 
     //전체 게시물(지도 상) 조회
     // 캐릭터, 위치(Board), boardIdx
-    public List<BoardDto.GetBoardMap> showBoardMapList() throws BaseException {
+    public List<BoardDto.GetBoardMap> showBoardMapList(Principal principal) throws BaseException {
 
-        List<Board> getBoards = boardRepository.findBoardByStatus("ACTIVE");
+        List<Board> getBoards = getBoards(principal);
 
         List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
-
 
         for(Board b : getBoards) {
             Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdx(b);
@@ -149,6 +158,31 @@ public class BoardService {
 
 
         return getBoardsMapList;
+    }
+
+    //게시물 조회 리스트,지도 중복 코드
+    public List<Board> getBoards(Principal principal) throws BaseException {
+        //조회하는 유저
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User user = optionalUser.get();
+
+        List<Board> getBoards = boardUserRepository.findBoardBySchoolAndStatus(user.getSchoolIdx(), "ACTIVE");
+
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        //시간 만료 체크
+        for (Board b: getBoards){
+            Duration timeCheck = Duration.between(b.getCreatedAt(),currentTime);
+            if(timeCheck.getSeconds() > b.getMessageDuration() * 3600L) {
+                b.changeStatus("EXPIRED");
+            }
+        }
+
+        return getBoards;
     }
 
     public void likeBoard(Principal principal, Long boardIdx) throws BaseException {
