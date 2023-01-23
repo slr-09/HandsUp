@@ -3,13 +3,17 @@ package com.back.handsUp.service;
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.*;
+import com.back.handsUp.domain.chat.ChatRoom;
+import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardDto;
 import com.back.handsUp.dto.board.BoardPreviewRes;
+import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.repository.board.BoardRepository;
 import com.back.handsUp.repository.board.BoardTagRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.board.TagRepository;
+import com.back.handsUp.repository.chat.ChatRoomRepository;
 import com.back.handsUp.repository.user.UserRepository;
 import com.back.handsUp.utils.FirebaseCloudMessageService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +43,7 @@ public class BoardService {
     private final UserRepository userRepository;
     private final BoardUserRepository boardUserRepository;
     private final FirebaseCloudMessageService firebaseCloudMessageService;
+    private final ChatRoomRepository chatRoomRepository;
 
 
     //단일 게시물 조회
@@ -394,5 +399,43 @@ public class BoardService {
                 BoardTag boardTagEntity = optional.get();
                 boardTagEntity.changeStatus("ACTIVE");
             }
+    }
+
+    //받은 하트 목록 조회
+    public List<BoardDto.ReceivedLikeRes> receivedLikeList (Principal principal) throws BaseException {
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        if(optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+        User user = optional.get();
+
+        List<Board> boardList = this.boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE");
+        List<BoardUser> boardUserList = new ArrayList<>();
+        for (Board board : boardList){
+                boardUserList.addAll(this.boardUserRepository.findBoardUserByBoardIdxAndStatus(board, "LIKE"));
+            }
+
+        List<BoardDto.ReceivedLikeRes> receivedLikeList = new ArrayList<>();
+        for(BoardUser boardUser: boardUserList){
+            Character character = boardUser.getUserIdx().getCharacter();
+            CharacterDto.GetCharacterInfo characterInfo = new CharacterDto.GetCharacterInfo(character.getEye(),
+                    character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
+                    character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
+
+            Optional<ChatRoom> chatRoomOptional = this.chatRoomRepository.findChatRoomByBoardIdxAndUserIdx(boardUser.getBoardIdx(), boardUser.getUserIdx());
+            if(chatRoomOptional.isEmpty()){
+                throw new BaseException(BaseResponseStatus.NON_EXIST_CHATROOMIDX);
+            }
+
+            BoardDto.ReceivedLikeRes receivedLike = BoardDto.ReceivedLikeRes.builder()
+                    .text("아래 글에 "+boardUser.getUserIdx().getNickname()+"님이 관심있어요")
+                    .boardContent(boardUser.getBoardIdx().getContent())
+                    .LikeCreatedAt(boardUser.getCreatedAt())
+                    .character(characterInfo)
+                    .chatRoomIdx(chatRoomOptional.get().getChatRoomIdx())
+                    .build();
+            receivedLikeList.add(receivedLike);
+        }
+        return receivedLikeList;
     }
 }
