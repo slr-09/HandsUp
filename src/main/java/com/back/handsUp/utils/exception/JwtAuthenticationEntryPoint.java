@@ -15,7 +15,10 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         // 유효한 자격증명을 제공하지 않고 접근하려 할때 401
 //        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         String exception =(String)request.getAttribute("exception");
-        if(exception.equals("4043")){
+
+        if (exception == null) {
+            setResponse(response, "4047", "JWT 토큰에 오류가 발생했습니다");
+        } else if(exception.equals("4043")){
             setResponse(response, exception, "잘못된 JWT 서명입니다.");
         } else if (exception.equals("4044")) {
             setResponse(response, exception, "만료된 JWT 토큰입니다.");
@@ -25,7 +28,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             setResponse(response, exception, "JWT 토큰이 잘못되었습니다.");
         } else {
             setResponse(response, "4047", "JWT 토큰에 오류가 발생했습니다");
-
         }
     }
 
