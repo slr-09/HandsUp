@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import com.back.handsUp.domain.user.Character;
-import java.util.List;
 
 @NoArgsConstructor
 public class BoardDto {
@@ -42,6 +41,16 @@ public class BoardDto {
         private String tag;
         private String didLike;
         private int messageDuration;
+        private LocalDateTime createdAt;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class BriefBoard {
+        private Long boardIdx;
+        private String location;
+        private String content;
         private LocalDateTime createdAt;
     }
 }

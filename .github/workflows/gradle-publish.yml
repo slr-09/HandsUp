@@ -10,8 +10,7 @@ name: Spring Boot & Gradle CI/CD
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+
 
 env:
   AWS_REGION: ap-northeast-2
@@ -39,68 +38,50 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
+          
+#      - name: Copy secret
+#        env:
+#          OCCUPY_SECRET: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
+#          OCCUPY_SECRET_DIR: src/main/resources/
+#          OCCUPY_SECRET_DIR_FILE_NAME: jasypt-encryptor-password.txt
+#        run: echo $OCCUPY_SECRET | base64 -di > $OCCUPY_SECRET_DIR/$OCCUPY_SECRET_DIR_FILE_NAME
 
+      - uses: actions/checkout@v3
+      - run: touch ./src/main/resources/application.properties
+      - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
+      - run: cat ./src/main/resources/application.properties
+      
       # (3) Gradle build (Test 제외)
       - name: Build with Gradle
         uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
         with:
           arguments: clean build -x test
 
-      # (4) 압축 파일 만들기
-      - name: Make Zip File
-        run: zip -qq -r ./springboot-intro-build.zip .
-        shell: bash
 
-      # (5) 권한 부여
+      # (4) 권한 부여
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
-
-      # (6) S3 Bucket으로 copy
-      - name: Deliver to AWS S3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
+          
+          
+      # (5) 빌드 결과물을 S3 버킷에 업로드
+      - name: Upload to AWS S3
         run: |
-          aws s3 cp \
-          --region ap-northeast-2 \
-          --acl private \
-          ./springboot-intro-build.zip s3://$S3_BUCKET_NAME/
-
-
-      # Deploy
-      - name: Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws deploy push \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --ignore-hidden-files \
+            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+            --source .
+      
+      # (6) S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
+      - name: Deploy to AWS EC2 from S3
         run: |
           aws deploy create-deployment \
           --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+          --deployment-config-name CodeDeployDefault.AllAtOnce \
           --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-          --file-exists-behavior OVERWRITE \
-          --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip \
-          --region ap-northeast-2
-
-
-#     (5) 빌드 결과물을 S3 버킷에 업로드
-#        - name: Upload to AWS S3
-#          run: |
-#            aws deploy push \
-#              --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-#              --ignore-hidden-files \
-#              --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
-#              --source .
-
-
-    # (6) S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
-#    - name: Deploy to AWS EC2 from S3
-#      run: |
-#        aws deploy create-deployment \
-#          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-#          --deployment-config-name CodeDeployDefault.AllAtOnce \
-#          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-#          --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
-
+          --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
