@@ -1,5 +1,6 @@
 package com.back.handsUp.dto.board;
 
+import com.back.handsUp.dto.user.CharacterDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,5 +53,16 @@ public class BoardDto {
         private String location;
         private String content;
         private LocalDateTime createdAt;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class ReceivedLikeRes {
+        private Long chatRoomIdx;
+        private LocalDateTime LikeCreatedAt;
+        private String text;
+        private String boardContent;
+        private CharacterDto.GetCharacterInfo character;
     }
 }
