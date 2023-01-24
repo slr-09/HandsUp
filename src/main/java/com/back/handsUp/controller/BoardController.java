@@ -3,16 +3,12 @@ package com.back.handsUp.controller;
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.domain.board.Board;
-import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardDto;
 import com.back.handsUp.dto.board.BoardPreviewRes;
 import com.back.handsUp.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -112,6 +108,17 @@ public class BoardController {
         try{
             this.boardService.patchBoard(principal, boardIdx, boardInfo);
             return new BaseResponse<>("게시글을 수정하였습니다.");
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/like")
+    public BaseResponse<List<BoardDto.ReceivedLikeRes>> getReceivedLikeList(Principal principal){
+        try{
+            List<BoardDto.ReceivedLikeRes>  receivedLikeResList= this.boardService.receivedLikeList(principal);
+            return new BaseResponse<>(receivedLikeResList);
         } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
