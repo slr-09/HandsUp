@@ -25,10 +25,7 @@ import javax.transaction.Transactional;
 import java.security.Principal;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
@@ -146,7 +143,7 @@ public class BoardService {
         List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
 
         for(Board b : getBoards) {
-            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdx(b);
+            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(b, "WRITE").stream().findFirst();
             if(optional.isEmpty()){
                 throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
             }
@@ -312,7 +309,12 @@ public class BoardService {
         }
         Board myBoardsEntity = myBoards.get();
 
-        Optional<BoardUser> boardUser = this.boardUserRepository.findBoardUserByBoardIdx(myBoardsEntity);
+        Optional<BoardUser> boardUser = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(myBoardsEntity, "WRITE").stream().findFirst();
+
+        //게시물이 존재하는지 체크
+        if(boardUser.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARD_LIST);
+        }
 
         //해당 게시물을 로그인한 유저가 작성했는지 체크
         if(!Objects.equals(boardUser.get().getUserIdx().getUserIdx(), userEntity.getUserIdx())){
@@ -376,7 +378,7 @@ public class BoardService {
     }
 
     private void setTags(BoardDto.GetBoardInfo boardInfo, Board boardEntity) {
-            Optional<Tag> tagEntity = this.tagRepository.findByName(boardInfo.getTag());
+            Optional<Tag> tagEntity = this.tagRepository.findTagByName(boardInfo.getTag());
             Tag targetTag;
 
             if(tagEntity.isEmpty()){
@@ -386,6 +388,7 @@ public class BoardService {
                 this.tagRepository.save(targetTag);
             } else {
                targetTag = tagEntity.get();
+
             }
 
             Optional<BoardTag> optional = this.boardTagRepository.findByBoardIdxAndTagIdx(boardEntity, targetTag);
@@ -395,6 +398,8 @@ public class BoardService {
                         .tagIdx(targetTag)
                         .build();
                 this.boardTagRepository.save(boardTagEntity);
+                log.info("new boardTag save done");
+
             } else{
                 BoardTag boardTagEntity = optional.get();
                 boardTagEntity.changeStatus("ACTIVE");
@@ -436,6 +441,7 @@ public class BoardService {
                     .build();
             receivedLikeList.add(receivedLike);
         }
+        receivedLikeList.sort(Collections.reverseOrder());
         return receivedLikeList;
     }
 }
