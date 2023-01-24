@@ -10,7 +10,8 @@ name: Spring Boot & Gradle CI/CD
 on:
   push:
     branches: [ main ]
-
+  pull_request:
+    branches: [ main ]
 
 env:
   AWS_REGION: ap-northeast-2
@@ -38,19 +39,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
-          
-#      - name: Copy secret
-#        env:
-#          OCCUPY_SECRET: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
-#          OCCUPY_SECRET_DIR: src/main/resources/
-#          OCCUPY_SECRET_DIR_FILE_NAME: jasypt-encryptor-password.txt
-#        run: echo $OCCUPY_SECRET | base64 -di > $OCCUPY_SECRET_DIR/$OCCUPY_SECRET_DIR_FILE_NAME
 
-      - uses: actions/checkout@v3
-      - run: touch ./src/main/resources/application.properties
-      - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
-      - run: cat ./src/main/resources/application.properties
-      
       # (3) Gradle build (Test 제외)
       - name: Build with Gradle
         uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee

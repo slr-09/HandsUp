@@ -376,6 +376,61 @@ public class BoardService {
         }
     }
 
+    public String blockBoard(Principal principal, Long boardIdx) throws BaseException {
+        String successResult = "게시물을 차단하였습니다.";
+        String failResult = "게시물 차단에 실패하였습니다.";
+        String selfBlockResult = "본인 게시물을 차단하지 못합니다.";
+        String BlockedResult = "이미 차단된 게시물입니다.";
+
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+
+        User user = optionalUser.get();
+
+        Optional<Board> optionalBoard = boardRepository.findByBoardIdx(boardIdx);
+        if (optionalBoard.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDIDX);
+        }
+
+        Board board = optionalBoard.get();
+
+        Optional<BoardUser> optionalBoardUser = boardUserRepository.findBoardUserByBoardIdxAndUserIdx(board, user);
+
+        BoardUser boardUser;
+
+        //BoardUser 객체가 없을 때
+        if (optionalBoardUser.isEmpty()) {
+            boardUser = BoardUser.builder()
+                    .userIdx(user)
+                    .boardIdx(board)
+                    .status("BLOCK").build();
+
+            try {
+                boardUserRepository.save(boardUser);
+                return successResult;
+            } catch (Exception e) {
+                throw new BaseException(DATABASE_INSERT_ERROR);
+            }
+        } else if (Objects.equals(optionalBoardUser.get().getStatus(), "LIKE")) { //하트를 누른 게시물일 때
+            boardUser = optionalBoardUser.get();
+            boardUser.changeStatus("BLOCK");
+
+            try {
+                boardUserRepository.save(boardUser);
+                return successResult;
+            } catch (Exception e) {
+                throw new BaseException(DATABASE_INSERT_ERROR);
+            }
+        } else if (Objects.equals(optionalBoardUser.get().getStatus(), "WRITE")) { //본인이 작성자일 때
+            return selfBlockResult;
+        } else if (Objects.equals(optionalBoardUser.get().getStatus(), "BLOCK")) { //이미 차단한 게시물일 때
+            return BlockedResult;
+        } else return failResult; //알 수 없는 이유
+
+    }
+
     private void setTags(BoardDto.GetBoardInfo boardInfo, Board boardEntity) {
             Optional<Tag> tagEntity = this.tagRepository.findTagByName(boardInfo.getTag());
             Tag targetTag;

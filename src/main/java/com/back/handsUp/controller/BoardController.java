@@ -113,6 +113,16 @@ public class BoardController {
         }
     }
 
+    @PostMapping("/block/{boardIdx}")
+    public BaseResponse<String> blockBoard(Principal principal, @PathVariable Long boardIdx) {
+        try {
+            String result = this.boardService.blockBoard(principal, boardIdx);
+            return new BaseResponse<>(result);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
     @ResponseBody
     @GetMapping("/like")
     public BaseResponse<List<BoardDto.ReceivedLikeRes>> getReceivedLikeList(Principal principal){
