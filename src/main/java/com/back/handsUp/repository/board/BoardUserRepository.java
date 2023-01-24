@@ -13,6 +13,9 @@ import java.util.Optional;
 
 @Repository
 public interface BoardUserRepository extends JpaRepository<BoardUser, Long> {
+
+    Optional<BoardUser> findBoardUserByBoardIdx(Board boardIdx);
+
     @Query("select b.boardIdx from BoardUser b where b.userIdx = ?1 and b.status = ?2")
     List<Board> findBoardIdxByUserIdxAndStatus(User userIdx, String status);
 
