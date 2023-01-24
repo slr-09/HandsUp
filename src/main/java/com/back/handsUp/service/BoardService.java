@@ -25,10 +25,7 @@ import javax.transaction.Transactional;
 import java.security.Principal;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
@@ -436,6 +433,7 @@ public class BoardService {
                     .build();
             receivedLikeList.add(receivedLike);
         }
+        receivedLikeList.sort(Collections.reverseOrder());
         return receivedLikeList;
     }
 }
