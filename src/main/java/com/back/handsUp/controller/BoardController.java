@@ -3,16 +3,12 @@ package com.back.handsUp.controller;
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.domain.board.Board;
-import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardDto;
 import com.back.handsUp.dto.board.BoardPreviewRes;
 import com.back.handsUp.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -42,9 +38,9 @@ public class BoardController {
     //전체 게시물 조회
     @ResponseBody
     @GetMapping("/showList")
-    public BaseResponse<List<Board>> showBoardList(){
+    public BaseResponse<List<Board>> showBoardList(Principal principal){
         try {
-            List<Board> getBoards = boardService.showBoardList();
+            List<Board> getBoards = boardService.showBoardList(principal);
             return new BaseResponse<>(getBoards);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
@@ -54,9 +50,9 @@ public class BoardController {
     //전체 게시물(지도 상) 조회
     @ResponseBody
     @GetMapping("/showMapList")
-    public BaseResponse<List<BoardDto.GetBoardMap>> showBoardMapList(){
+    public BaseResponse<List<BoardDto.GetBoardMap>> showBoardMapList(Principal principal){
         try {
-            List<BoardDto.GetBoardMap> getBoardsMap = boardService.showBoardMapList();
+            List<BoardDto.GetBoardMap> getBoardsMap = boardService.showBoardMapList(principal);
             return new BaseResponse<>(getBoardsMap);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
@@ -123,6 +119,17 @@ public class BoardController {
             String result = this.boardService.blockBoard(principal, boardIdx);
             return new BaseResponse<>(result);
         } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/like")
+    public BaseResponse<List<BoardDto.ReceivedLikeRes>> getReceivedLikeList(Principal principal){
+        try{
+            List<BoardDto.ReceivedLikeRes>  receivedLikeResList= this.boardService.receivedLikeList(principal);
+            return new BaseResponse<>(receivedLikeResList);
+        } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
     }
