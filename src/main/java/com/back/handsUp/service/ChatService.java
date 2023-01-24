@@ -43,12 +43,21 @@ public class ChatService {
         }
         ChatRoom chatRoom = optional1.get();
 
-        Optional<BoardUser> optional2 = this.boardUserRepository.findBoardUserByBoardIdx(chatRoom.getBoardIdx());
+        //게시물에 하트 누른 사람
+        Optional<BoardUser> optional2 = this.boardUserRepository.findBoardUserByBoardIdxAndUserIdx(chatRoom.getBoardIdx(), chatRoom.getUserIdx());
         if(optional2.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
         }
         BoardUser boardUser = optional2.get();
 
+        //게시물 작성자
+        Optional<User> optional3 = this.boardUserRepository.findUserIdxByBoardIdxAndStatus(chatRoom.getBoardIdx().getBoardIdx(), "WRITE");
+        if(optional3.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+        }
+        User boardWriter = optional3.get();
+
+        //채팅 상대방 캐릭터
         Character character;
         if(loginUser.equals(boardUser.getUserIdx())){
             character = chatRoom.getUserIdx().getCharacter();
@@ -56,6 +65,7 @@ public class ChatService {
             character = boardUser.getUserIdx().getCharacter();
         }
 
+        //위치정보
         String location;
         if(chatRoom.getBoardIdx().getIndicateLocation().equals("true")){
             location=chatRoom.getBoardIdx().getLocation();
@@ -73,7 +83,7 @@ public class ChatService {
         ChatDto.ResChatRoom resChat = ChatDto.ResChatRoom.builder()
                 .board(briefBoard)
                 .character(characterInfo)
-                .nickname(boardUser.getUserIdx().getNickname())
+                .nickname(boardWriter.getNickname())
                 .build();
 
         return resChat;

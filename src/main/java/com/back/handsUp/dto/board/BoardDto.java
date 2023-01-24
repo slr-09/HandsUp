@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import com.back.handsUp.domain.user.Character;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.data.relational.core.sql.Like;
 
 @NoArgsConstructor
 public class BoardDto {
@@ -58,11 +60,21 @@ public class BoardDto {
     @Getter
     @AllArgsConstructor
     @Builder
-    public static class ReceivedLikeRes {
+    public static class ReceivedLikeRes implements Comparable<ReceivedLikeRes> {
         private Long chatRoomIdx;
         private LocalDateTime LikeCreatedAt;
         private String text;
         private String boardContent;
         private CharacterDto.GetCharacterInfo character;
+
+        @Override
+        public int compareTo(@NotNull ReceivedLikeRes res) {
+            if (res.LikeCreatedAt.isBefore(LikeCreatedAt)) {
+                return 1;
+            } else if (res.LikeCreatedAt.isAfter(LikeCreatedAt)) {
+                return -1;
+            }
+            return 0;
+        }
     }
 }
