@@ -23,7 +23,6 @@ import com.back.handsUp.repository.user.jwt.RefreshTokenRepository;
 import com.back.handsUp.utils.Role;
 import com.back.handsUp.utils.TokenProvider;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -36,8 +35,6 @@ import javax.transaction.Transactional;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
