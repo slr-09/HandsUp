@@ -1,7 +1,6 @@
 package com.back.handsUp.domain.user;
 
 import com.back.handsUp.baseResponse.BaseEntity;
-import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.utils.Role;
 import lombok.Builder;
@@ -11,9 +10,7 @@ import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Setter

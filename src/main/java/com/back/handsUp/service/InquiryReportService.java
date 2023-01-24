@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotBlank;
 import java.security.Principal;
 import java.util.Optional;
 

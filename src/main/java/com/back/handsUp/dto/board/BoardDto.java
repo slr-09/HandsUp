@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import com.back.handsUp.domain.user.Character;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.data.relational.core.sql.Like;
 
 @NoArgsConstructor
 public class BoardDto {
