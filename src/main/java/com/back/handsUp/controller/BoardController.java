@@ -116,4 +116,14 @@ public class BoardController {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @PostMapping("/block/{boardIdx}")
+    public BaseResponse<String> blockBoard(Principal principal, @PathVariable Long boardIdx) {
+        try {
+            String result = this.boardService.blockBoard(principal, boardIdx);
+            return new BaseResponse<>(result);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }
