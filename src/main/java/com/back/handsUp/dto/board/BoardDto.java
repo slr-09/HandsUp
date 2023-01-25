@@ -31,6 +31,7 @@ public class BoardDto {
         private Long boardIdx;
         private CharacterDto.GetCharacterInfo character;
         private String location;
+        private LocalDateTime createdAt;
     }
 
     @Getter
