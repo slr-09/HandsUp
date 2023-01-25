@@ -119,7 +119,7 @@ public class BoardService {
 
     }
 
-    //전체 게시물(지도 상) 조회
+    // 전체 게시물(지도 상) 조회
     // 캐릭터, 위치(Board), boardIdx
     public List<BoardDto.GetBoardMap> showBoardMapList(Principal principal) throws BaseException {
 
@@ -134,9 +134,14 @@ public class BoardService {
             }
             BoardUser boardUser = optional.get();
 
+            Character character = boardUser.getUserIdx().getCharacter();
+            CharacterDto.GetCharacterInfo characterInfo = new CharacterDto.GetCharacterInfo(character.getEye(),
+                    character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
+                    character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
+
             BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
                     .boardIdx(b.getBoardIdx())
-                    .character(boardUser.getUserIdx().getCharacter())
+                    .character(characterInfo)
                     .location(b.getLocation())
                     .build();
 
@@ -157,17 +162,33 @@ public class BoardService {
         }
         User user = optionalUser.get();
 
-        List<Board> getBoards = boardUserRepository.findBoardBySchoolAndStatus(user.getSchoolIdx(), "ACTIVE");
+        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(user.getSchoolIdx(), "ACTIVE");
+
+        List<Board> getBoards = new ArrayList<>();
+        List<Board> blockedBoard = new ArrayList<>();
 
         LocalDateTime currentTime = LocalDateTime.now();
 
-        //시간 만료 체크
-        for (Board b: getBoards){
-            Duration timeCheck = Duration.between(b.getCreatedAt(),currentTime);
-            if(timeCheck.getSeconds() > b.getMessageDuration() * 3600L) {
-                b.changeStatus("EXPIRED");
+
+        for (BoardUser b: getSchoolBoards){
+            //시간 만료 체크
+            Duration timeCheck = Duration.between(b.getBoardIdx().getCreatedAt(),currentTime);
+//            log.info("timecheck={}",timeCheck.getSeconds());
+            if(timeCheck.getSeconds() > b.getBoardIdx().getMessageDuration() * 3600L) {
+                b.getBoardIdx().changeStatus("EXPIRED");
+            }
+            //차단 체크
+            if(b.getUserIdx()==user && b.getStatus().equals("BLOCK")){
+                blockedBoard.add(b.getBoardIdx());
+            }else{
+                if(!getBoards.contains(b.getBoardIdx())){
+                    getBoards.add(b.getBoardIdx());
+                }
             }
         }
+
+        getBoards.removeAll(blockedBoard);
+
 
         return getBoards;
     }
