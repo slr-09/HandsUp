@@ -38,11 +38,11 @@ public class User extends BaseEntity {
     @Column(columnDefinition="date default (current_date)")
     private Date nicknameUpdatedAt;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "characterIdx")
     private Character character;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schoolIdx")
     private School schoolIdx;
 
