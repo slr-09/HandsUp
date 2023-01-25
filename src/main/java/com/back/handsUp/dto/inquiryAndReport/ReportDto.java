@@ -21,4 +21,13 @@ public class ReportDto {
         private Long boardIdx;
     }
 
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class GetReport {
+
+        private String content;
+        private Long reportedUserIdx;  //신고당한 유저
+    }
+
 }
