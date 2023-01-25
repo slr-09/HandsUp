@@ -178,27 +178,32 @@ public class UserService {
         if(optional.isEmpty()){
             throw new BaseException(NON_EXIST_USERIDX);
         }
+        User findUser = optional.get();
+
+        //닉네임 변경주기 확인
+        Date lastUpdate = findUser.getNicknameUpdatedAt();
+
+        ZoneId defaultZoneId = ZoneId.systemDefault();
+        Date today = Date.from(LocalDate.now().atStartOfDay(defaultZoneId).toInstant());
+
+        long differenceInMillis = today.getTime() - lastUpdate.getTime();
+
+        long days = (differenceInMillis / (24 * 60 * 60 * 1000L)) % 365;
+
+
+        if(days<7){
+            throw new BaseException(LIMIT_NICKNAME_CHANGE);
+        }
+
+        //닉네임 중복 확인
+        optional = this.userRepository.findByNickname(nickname);
+        if(!optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.EXIST_USER);
+        }
 
         try{
-            User findUser = optional.get();
-
-            //닉네임 변경주기 확인
-            Date lastUpdate = findUser.getNicknameUpdatedAt();
-            ZoneId defaultZoneId = ZoneId.systemDefault();
-            Date today = Date.from(LocalDate.now().atStartOfDay(defaultZoneId).toInstant());
-            long differenceInMillis = today.getTime() - lastUpdate.getTime();
-            long days = (differenceInMillis / (24 * 60 * 60 * 1000L)) % 365;
-            if(days<7){
-                throw new BaseException(LIMIT_NICKNAME_CHANGE);
-            }
-
-            //닉네임 중복 확인
-            optional = this.userRepository.findByNickname(nickname);
-            if(!optional.isEmpty()){
-                throw new BaseException(BaseResponseStatus.EXIST_USER);
-            }
-
             findUser.setNickname(nickname);
+            findUser.setNicknameUpdatedAt(today);
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }

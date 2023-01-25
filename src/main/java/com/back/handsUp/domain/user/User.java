@@ -35,7 +35,7 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 15)
     private String nickname;
 
-    @Column(columnDefinition="date default (current_date)", updatable = false)
+    @Column(columnDefinition="date default (current_date)")
     private Date nicknameUpdatedAt;
 
     @OneToOne
