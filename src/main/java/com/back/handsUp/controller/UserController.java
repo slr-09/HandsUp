@@ -153,10 +153,10 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{userIdx}")
-    public BaseResponse<UserCharacterDto> getNicknameAndCharacter(@PathVariable Long userIdx){
+    @GetMapping("")
+    public BaseResponse<UserCharacterDto> getNicknameAndCharacter(Principal principal){
         try {
-            UserCharacterDto userCharacterDto = userService.getUserNicknameCharacter(userIdx);
+            UserCharacterDto userCharacterDto = userService.getUserNicknameCharacter(principal);
             return new BaseResponse<>(userCharacterDto);
 
         } catch (BaseException e) {

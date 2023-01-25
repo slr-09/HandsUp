@@ -34,9 +34,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.security.Principal;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -178,30 +176,27 @@ public class UserService {
         if(optional.isEmpty()){
             throw new BaseException(NON_EXIST_USERIDX);
         }
+
         User findUser = optional.get();
 
         //닉네임 변경주기 확인
         Date lastUpdate = findUser.getNicknameUpdatedAt();
-
         ZoneId defaultZoneId = ZoneId.systemDefault();
         Date today = Date.from(LocalDate.now().atStartOfDay(defaultZoneId).toInstant());
-
         long differenceInMillis = today.getTime() - lastUpdate.getTime();
-
         long days = (differenceInMillis / (24 * 60 * 60 * 1000L)) % 365;
-
-
-        if(days<7){
+        if (days < 7) {
             throw new BaseException(LIMIT_NICKNAME_CHANGE);
         }
 
         //닉네임 중복 확인
         optional = this.userRepository.findByNickname(nickname);
-        if(!optional.isEmpty()){
+        if (!optional.isEmpty()) {
             throw new BaseException(BaseResponseStatus.EXIST_USER);
         }
 
-        try{
+
+        try {
             findUser.setNickname(nickname);
             findUser.setNicknameUpdatedAt(today);
         } catch (Exception e) {
@@ -366,8 +361,8 @@ public class UserService {
     }
 
     //닉네임, 캐릭터 정보 조회
-    public UserCharacterDto getUserNicknameCharacter(Long userIdx) throws BaseException {
-        Optional<User> optional = userRepository.findByUserIdx(userIdx);
+    public UserCharacterDto getUserNicknameCharacter(Principal principal) throws BaseException {
+        Optional<User> optional = userRepository.findByEmail(principal.getName());
         if(optional.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
         }
