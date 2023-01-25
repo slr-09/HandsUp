@@ -114,20 +114,6 @@ public class BoardService {
 
         List<Board> getBoards = getBoards(principal);
 
-//        List<Board> getSchoolBoards = new ArrayList<>();
-
-//        for(Board b : getStatusBoards){
-//            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdx(b);
-//            if(optional.isEmpty()){
-//                throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
-//            }
-//            BoardUser boardUser = optional.get();
-//            if(boardUser.getUserIdx().getSchoolIdx()==user.getSchoolIdx()){
-//                getSchoolBoards.add(b);
-//            }
-//
-//        }
-
 
         return getBoards;
 
