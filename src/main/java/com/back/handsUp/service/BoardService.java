@@ -143,6 +143,7 @@ public class BoardService {
                     .boardIdx(b.getBoardIdx())
                     .character(characterInfo)
                     .location(b.getLocation())
+                    .createdAt(b.getCreatedAt())
                     .build();
 
             getBoardsMapList.add(getBoardMap);

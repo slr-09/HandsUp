@@ -2,6 +2,7 @@ package com.back.handsUp.domain.board;
 
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardPreviewRes;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 @Table(name = "board")
 @NoArgsConstructor
 @DynamicInsert
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Board {
 
     @Id
