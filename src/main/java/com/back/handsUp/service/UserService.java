@@ -70,7 +70,7 @@ public class UserService {
         //닉네임 중복 확인
         optional = this.userRepository.findByNickname(user.getNickname());
         if(!optional.isEmpty()){
-            throw new BaseException(BaseResponseStatus.EXIST_USER);
+            throw new BaseException(BaseResponseStatus.EXIST_NICKNAME);
         }
 
         String password = user.getPassword();
