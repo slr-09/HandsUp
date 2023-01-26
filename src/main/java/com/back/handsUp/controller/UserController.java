@@ -4,12 +4,12 @@ import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.user.Character;
+import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserCharacterDto;
 import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.service.MailService;
-import com.back.handsUp.dto.user.UserNicknameDto;
 import com.back.handsUp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
@@ -133,20 +133,20 @@ public class UserController {
     }
 
     @PatchMapping("/nickname")
-    public BaseResponse<String> updateUsername(@RequestBody UserNicknameDto userNicknameDto){
+    public BaseResponse<String> updateUsername(Principal principal, @RequestBody UserDto.ReqNickname nickname){
 
         try{
-            userService.updateNickname(userNicknameDto.getUserIdx(), userNicknameDto.getNickname());
+            userService.updateNickname(principal, nickname.getNickname());
             return new BaseResponse<>("닉네임을 수정하였습니다.");
         } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
     }
 
-    @PatchMapping("/character/{characterIdx}")
-    public BaseResponse<String> updateCharacter(@PathVariable Long characterIdx, @RequestBody CharacterDto.GetCharacterInfo characterInfo){
+    @PatchMapping("/character")
+    public BaseResponse<String> updateCharacter(Principal principal, @RequestBody CharacterDto.GetCharacterInfo characterInfo){
         try{
-            userService.updateChatacter(characterIdx, characterInfo);
+            userService.updateChatacter(principal, characterInfo);
             return new BaseResponse<>("캐릭터를 수정하였습니다.");
         } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());

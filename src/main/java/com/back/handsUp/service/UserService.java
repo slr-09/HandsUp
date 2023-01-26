@@ -145,15 +145,16 @@ public class UserService {
     }
 
     //캐릭터 수정
-    public void updateChatacter(Long characterIdx, CharacterDto.GetCharacterInfo characterInfo) throws BaseException {
+    public void updateChatacter(Principal principal, CharacterDto.GetCharacterInfo characterInfo) throws BaseException {
 
-        Optional<Character> optional = this.characterRepository.findByCharacterIdx(characterIdx);
-        if(optional.isEmpty()){
-                throw new BaseException(NON_EXIST_CHARACTERIDX);
-            }
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        if(optionalUser.isEmpty()){
+            throw new BaseException(NON_EXIST_USERIDX);
+        }
+
 
         try{
-            Character findCharacter = optional.get();
+            Character findCharacter = optionalUser.get().getCharacter();
 
             findCharacter.setEye(characterInfo.getEye());
             findCharacter.setBackGroundColor(characterInfo.getBackGroundColor());
@@ -171,8 +172,8 @@ public class UserService {
     }
 
     //닉네임 수정
-    public void updateNickname(Long userIdx, String nickname) throws BaseException {
-        Optional<User> optional = this.userRepository.findByUserIdx(userIdx);
+    public void updateNickname(Principal principal, String nickname) throws BaseException {
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
         if(optional.isEmpty()){
             throw new BaseException(NON_EXIST_USERIDX);
         }
@@ -192,7 +193,7 @@ public class UserService {
         //닉네임 중복 확인
         optional = this.userRepository.findByNickname(nickname);
         if (!optional.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.EXIST_USER);
+            throw new BaseException(EXIST_NICKNAME);
         }
 
 

@@ -63,4 +63,10 @@ public class UserDto {
         private String email;
     }
 
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    public static class ReqNickname {
+        private String nickname;
+    }
 }
