@@ -114,26 +114,12 @@ public class BoardService {
 
         List<Board> getBoards = getBoards(principal);
 
-//        List<Board> getSchoolBoards = new ArrayList<>();
-
-//        for(Board b : getStatusBoards){
-//            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdx(b);
-//            if(optional.isEmpty()){
-//                throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
-//            }
-//            BoardUser boardUser = optional.get();
-//            if(boardUser.getUserIdx().getSchoolIdx()==user.getSchoolIdx()){
-//                getSchoolBoards.add(b);
-//            }
-//
-//        }
-
 
         return getBoards;
 
     }
 
-    //전체 게시물(지도 상) 조회
+    // 전체 게시물(지도 상) 조회
     // 캐릭터, 위치(Board), boardIdx
     public List<BoardDto.GetBoardMap> showBoardMapList(Principal principal) throws BaseException {
 
@@ -148,10 +134,16 @@ public class BoardService {
             }
             BoardUser boardUser = optional.get();
 
+            Character character = boardUser.getUserIdx().getCharacter();
+            CharacterDto.GetCharacterInfo characterInfo = new CharacterDto.GetCharacterInfo(character.getEye(),
+                    character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
+                    character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
+
             BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
                     .boardIdx(b.getBoardIdx())
-                    .character(boardUser.getUserIdx().getCharacter())
+                    .character(characterInfo)
                     .location(b.getLocation())
+                    .createdAt(b.getCreatedAt())
                     .build();
 
             getBoardsMapList.add(getBoardMap);
@@ -171,17 +163,33 @@ public class BoardService {
         }
         User user = optionalUser.get();
 
-        List<Board> getBoards = boardUserRepository.findBoardBySchoolAndStatus(user.getSchoolIdx(), "ACTIVE");
+        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(user.getSchoolIdx(), "ACTIVE");
+
+        List<Board> getBoards = new ArrayList<>();
+        List<Board> blockedBoard = new ArrayList<>();
 
         LocalDateTime currentTime = LocalDateTime.now();
 
-        //시간 만료 체크
-        for (Board b: getBoards){
-            Duration timeCheck = Duration.between(b.getCreatedAt(),currentTime);
-            if(timeCheck.getSeconds() > b.getMessageDuration() * 3600L) {
-                b.changeStatus("EXPIRED");
+
+        for (BoardUser b: getSchoolBoards){
+            //시간 만료 체크
+            Duration timeCheck = Duration.between(b.getBoardIdx().getCreatedAt(),currentTime);
+//            log.info("timecheck={}",timeCheck.getSeconds());
+            if(timeCheck.getSeconds() > b.getBoardIdx().getMessageDuration() * 3600L) {
+                b.getBoardIdx().changeStatus("EXPIRED");
+            }
+            //차단 체크
+            if(b.getUserIdx()==user && b.getStatus().equals("BLOCK")){
+                blockedBoard.add(b.getBoardIdx());
+            }else{
+                if(!getBoards.contains(b.getBoardIdx())){
+                    getBoards.add(b.getBoardIdx());
+                }
             }
         }
+
+        getBoards.removeAll(blockedBoard);
+
 
         return getBoards;
     }
@@ -374,6 +382,61 @@ public class BoardService {
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
+    }
+
+    public String blockBoard(Principal principal, Long boardIdx) throws BaseException {
+        String successResult = "게시물을 차단하였습니다.";
+        String failResult = "게시물 차단에 실패하였습니다.";
+        String selfBlockResult = "본인 게시물을 차단하지 못합니다.";
+        String BlockedResult = "이미 차단된 게시물입니다.";
+
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+
+        User user = optionalUser.get();
+
+        Optional<Board> optionalBoard = boardRepository.findByBoardIdx(boardIdx);
+        if (optionalBoard.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDIDX);
+        }
+
+        Board board = optionalBoard.get();
+
+        Optional<BoardUser> optionalBoardUser = boardUserRepository.findBoardUserByBoardIdxAndUserIdx(board, user);
+
+        BoardUser boardUser;
+
+        //BoardUser 객체가 없을 때
+        if (optionalBoardUser.isEmpty()) {
+            boardUser = BoardUser.builder()
+                    .userIdx(user)
+                    .boardIdx(board)
+                    .status("BLOCK").build();
+
+            try {
+                boardUserRepository.save(boardUser);
+                return successResult;
+            } catch (Exception e) {
+                throw new BaseException(DATABASE_INSERT_ERROR);
+            }
+        } else if (Objects.equals(optionalBoardUser.get().getStatus(), "LIKE")) { //하트를 누른 게시물일 때
+            boardUser = optionalBoardUser.get();
+            boardUser.changeStatus("BLOCK");
+
+            try {
+                boardUserRepository.save(boardUser);
+                return successResult;
+            } catch (Exception e) {
+                throw new BaseException(DATABASE_INSERT_ERROR);
+            }
+        } else if (Objects.equals(optionalBoardUser.get().getStatus(), "WRITE")) { //본인이 작성자일 때
+            return selfBlockResult;
+        } else if (Objects.equals(optionalBoardUser.get().getStatus(), "BLOCK")) { //이미 차단한 게시물일 때
+            return BlockedResult;
+        } else return failResult; //알 수 없는 이유
+
     }
 
     private void setTags(BoardDto.GetBoardInfo boardInfo, Board boardEntity) {

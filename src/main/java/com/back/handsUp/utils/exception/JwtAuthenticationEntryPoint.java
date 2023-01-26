@@ -15,7 +15,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         // 유효한 자격증명을 제공하지 않고 접근하려 할때 401
 //        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         String exception =(String)request.getAttribute("exception");
-
         if (exception == null) {
             setResponse(response, "4047", "JWT 토큰에 오류가 발생했습니다");
         } else if(exception.equals("4043")){

@@ -1,5 +1,6 @@
 package com.back.handsUp.dto.inquiryAndReport;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @NoArgsConstructor

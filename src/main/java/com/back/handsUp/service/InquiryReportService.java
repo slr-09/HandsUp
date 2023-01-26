@@ -15,7 +15,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotBlank;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -90,5 +93,42 @@ public class InquiryReportService {
             throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
         }
 
+    }
+
+    //문의 조회 (관리자용)
+    public List<InquiryDto.PostInquiryInfo> getInquiry(Principal principal) throws BaseException{
+
+        List<Inquiry> getInquiry = inquiryRepository.findAll();
+
+        List<InquiryDto.PostInquiryInfo> getInquiryInfo = new ArrayList<>();
+
+        for (Inquiry i : getInquiry){
+            InquiryDto.PostInquiryInfo dto = InquiryDto.PostInquiryInfo.builder()
+                    .contents(i.getContents())
+                    .build();
+
+            getInquiryInfo.add(dto);
+        }
+
+        return getInquiryInfo;
+    }
+
+    //신고 조회 (관리자용)
+    public List<ReportDto.GetReport> getReport(Principal principal) throws BaseException{
+
+        List<Report> getReport = reportRepository.findAll();
+
+        List<ReportDto.GetReport> getReportInfo = new ArrayList<>();
+
+        for (Report r : getReport){
+            ReportDto.GetReport dto = ReportDto.GetReport.builder()
+                    .reportedUserIdx(r.getReportedUser().getUserIdx())
+                    .content(r.getContents())
+                    .build();
+
+            getReportInfo.add(dto);
+        }
+
+        return getReportInfo;
     }
 }

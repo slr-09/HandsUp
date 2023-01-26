@@ -1,6 +1,7 @@
 package com.back.handsUp.domain.user;
 
 import com.back.handsUp.baseResponse.BaseEntity;
+import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.utils.Role;
 import lombok.Builder;
@@ -10,7 +11,9 @@ import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Setter
@@ -32,14 +35,14 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 15)
     private String nickname;
 
-    @Column(columnDefinition="date default (current_date)", updatable = false)
+    @Column(columnDefinition="date default (current_date)")
     private Date nicknameUpdatedAt;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "characterIdx")
     private Character character;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schoolIdx")
     private School schoolIdx;
 
