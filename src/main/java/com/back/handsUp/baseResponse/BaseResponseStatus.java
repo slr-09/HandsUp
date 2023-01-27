@@ -50,6 +50,8 @@ public enum BaseResponseStatus {
     UNSUPPORTED_JWT(false,4045,"지원되지 않는 JWT 토큰입니다."),
     ILLEGAL_JWT(false,4046,"JWT 토큰이 잘못되었습니다."),
     JWT_ERROR(false,4047,"JWT 토큰에 오류가 발생했습니다."),
+    ACCESS_DENIED_USER(false,4048,"접근 권한이 없는 유저입니다"),
+
 
 
     /**
