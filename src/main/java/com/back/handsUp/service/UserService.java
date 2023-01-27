@@ -67,12 +67,6 @@ public class UserService {
             throw new BaseException(BaseResponseStatus.EXIST_USER);
         }
 
-        //닉네임 중복 확인
-        optional = this.userRepository.findByNickname(user.getNickname());
-        if(!optional.isEmpty()){
-            throw new BaseException(BaseResponseStatus.EXIST_NICKNAME);
-        }
-
         String password = user.getPassword();
         try{
             String encodedPwd = passwordEncoder.encode(user.getPassword());
@@ -377,5 +371,13 @@ public class UserService {
             .build();
 
         return userCharacterDto;
+    }
+
+    //닉네임 중복 확인
+    public void checkNickname(UserDto.ReqNickname reqNickname) throws BaseException {
+        Optional<User> optional = this.userRepository.findByNickname(reqNickname.getNickname());
+        if(!optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.EXIST_NICKNAME);
+        }
     }
 }

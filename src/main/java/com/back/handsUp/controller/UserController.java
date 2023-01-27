@@ -162,4 +162,15 @@ public class UserController {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @ResponseBody
+    @PostMapping("/nickname")
+    public BaseResponse<String> checkNickname(@RequestBody UserDto.ReqNickname nickname){
+        try {
+            this.userService.checkNickname(nickname);
+            return new BaseResponse<>("사용할 수 있는 닉네임입니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }
