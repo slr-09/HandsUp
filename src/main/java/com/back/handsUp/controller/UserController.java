@@ -97,14 +97,13 @@ public class UserController {
 
     //회원 탈퇴
     @ResponseBody
-    @PatchMapping("/withdraw/{userIdx}")
-    public BaseResponse<Long> withdrawUser(Principal principal, @PathVariable("userIdx") Long userIdx){
+    @PatchMapping("/withdraw")
+    public BaseResponse<UserDto.ReqWithdraw> withdrawUser(Principal principal){
         try{
-            this.userService.withdrawUser(principal, userIdx);
+            UserDto.ReqWithdraw userIdx = this.userService.withdrawUser(principal);
             return new BaseResponse<>(userIdx);
         }catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
-
         }
     }
 
