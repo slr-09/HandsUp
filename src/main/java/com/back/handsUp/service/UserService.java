@@ -185,7 +185,7 @@ public class UserService {
         }
 
         //닉네임 중복 확인
-        optional = this.userRepository.findByNickname(nickname);
+        optional = this.userRepository.findByNicknameAndSchoolIdx(nickname, findUser.getSchoolIdx());
         if (!optional.isEmpty()) {
             throw new BaseException(EXIST_NICKNAME);
         }
@@ -374,8 +374,17 @@ public class UserService {
     }
 
     //닉네임 중복 확인
-    public void checkNickname(UserDto.ReqNickname reqNickname) throws BaseException {
-        Optional<User> optional = this.userRepository.findByNickname(reqNickname.getNickname());
+    public void checkNickname(UserDto.ReqCheckNickname reqCheckNickname) throws BaseException {
+        Optional<School> optionalSchool = this.schoolRepository.findByName(reqCheckNickname.getSchoolName());
+        Optional<User> optional;
+
+        if(!optionalSchool.isEmpty()){
+            School school = optionalSchool.get();
+            optional = this.userRepository.findByNicknameAndSchoolIdx(reqCheckNickname.getNickname(), school);
+        } else {
+            optional = this.userRepository.findByNickname(reqCheckNickname.getNickname());
+        }
+
         if(!optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.EXIST_NICKNAME);
         }
