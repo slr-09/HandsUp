@@ -70,4 +70,12 @@ public class UserDto {
     public static class ReqNickname {
         private String nickname;
     }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    public static class ReqCheckNickname {
+        private String schoolName;
+        private String nickname;
+    }
 }
