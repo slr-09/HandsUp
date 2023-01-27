@@ -18,8 +18,8 @@ public enum BaseResponseStatus {
     EXIST_USER(false, 4002, "이미 존재하는 유저입니다."),
     INVALID_REQUEST(false, 4003, "입력 양식이 잘못되었습니다."),
     SAME_PASSWORD(false, 4004, "현재 비밀번호와 변경할 비밀번호가 같습니다."),
-
-
+    LIMIT_NICKNAME_CHANGE(false,4005, "마지막 닉네임 변경일로부터 7일이 경과하지 않았습니다."),
+    EXIST_NICKNAME(false, 4006, "이미 존재하는 닉네임입니다."),
 
 
     NON_EXIST_BOARDIDX(false, 4010, "게시물 인덱스가 존재하지 않습니다."),

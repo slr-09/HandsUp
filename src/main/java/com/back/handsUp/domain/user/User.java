@@ -35,14 +35,14 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 15)
     private String nickname;
 
-    @Column(columnDefinition="date default (current_date)", updatable = false)
+    @Column(columnDefinition="date default (current_date)")
     private Date nicknameUpdatedAt;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "characterIdx")
     private Character character;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schoolIdx")
     private School schoolIdx;
 

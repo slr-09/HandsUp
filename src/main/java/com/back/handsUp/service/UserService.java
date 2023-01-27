@@ -34,6 +34,9 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -67,7 +70,7 @@ public class UserService {
         //닉네임 중복 확인
         optional = this.userRepository.findByNickname(user.getNickname());
         if(!optional.isEmpty()){
-            throw new BaseException(BaseResponseStatus.EXIST_USER);
+            throw new BaseException(BaseResponseStatus.EXIST_NICKNAME);
         }
 
         String password = user.getPassword();
@@ -141,15 +144,17 @@ public class UserService {
 
     }
 
-    public void updateChatacter(Long characterIdx, CharacterDto.GetCharacterInfo characterInfo) throws BaseException {
+    //캐릭터 수정
+    public void updateChatacter(Principal principal, CharacterDto.GetCharacterInfo characterInfo) throws BaseException {
 
-        Optional<Character> optional = this.characterRepository.findByCharacterIdx(characterIdx);
-        if(optional.isEmpty()){
-                throw new BaseException(NON_EXIST_CHARACTERIDX);
-            }
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        if(optionalUser.isEmpty()){
+            throw new BaseException(NON_EXIST_USERIDX);
+        }
+
 
         try{
-            Character findCharacter = optional.get();
+            Character findCharacter = optionalUser.get().getCharacter();
 
             findCharacter.setEye(characterInfo.getEye());
             findCharacter.setBackGroundColor(characterInfo.getBackGroundColor());
@@ -166,14 +171,35 @@ public class UserService {
         }
     }
 
-    public void updateNickname(Long userIdx, String nickname) throws BaseException {
-        Optional<User> optional = this.userRepository.findByUserIdx(userIdx);
+    //닉네임 수정
+    public void updateNickname(Principal principal, String nickname) throws BaseException {
+        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
         if(optional.isEmpty()){
             throw new BaseException(NON_EXIST_USERIDX);
         }
-        try{
-            User findUser = optional.get();
+
+        User findUser = optional.get();
+
+        //닉네임 변경주기 확인
+        Date lastUpdate = findUser.getNicknameUpdatedAt();
+        ZoneId defaultZoneId = ZoneId.systemDefault();
+        Date today = Date.from(LocalDate.now().atStartOfDay(defaultZoneId).toInstant());
+        long differenceInMillis = today.getTime() - lastUpdate.getTime();
+        long days = (differenceInMillis / (24 * 60 * 60 * 1000L)) % 365;
+        if (days < 7) {
+            throw new BaseException(LIMIT_NICKNAME_CHANGE);
+        }
+
+        //닉네임 중복 확인
+        optional = this.userRepository.findByNickname(nickname);
+        if (!optional.isEmpty()) {
+            throw new BaseException(EXIST_NICKNAME);
+        }
+
+
+        try {
             findUser.setNickname(nickname);
+            findUser.setNicknameUpdatedAt(today);
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
@@ -335,8 +361,9 @@ public class UserService {
 
     }
 
-    public UserCharacterDto getUserNicknameCharacter(Long userIdx) throws BaseException {
-        Optional<User> optional = userRepository.findByUserIdx(userIdx);
+    //닉네임, 캐릭터 정보 조회
+    public UserCharacterDto getUserNicknameCharacter(Principal principal) throws BaseException {
+        Optional<User> optional = userRepository.findByEmail(principal.getName());
         if(optional.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
         }

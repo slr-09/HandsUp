@@ -38,4 +38,13 @@ public class ReportDto {
         private String content;
         private Long userIdx;
     }
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class GetReport {
+
+        private String content;
+        private Long reportedUserIdx;  //신고당한 유저
+    }
+
 }

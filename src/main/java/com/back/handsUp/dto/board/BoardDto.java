@@ -31,8 +31,9 @@ public class BoardDto {
     @NoArgsConstructor
     public static class GetBoardMap {
         private Long boardIdx;
-        private Character character;
+        private CharacterDto.GetCharacterInfo character;
         private String location;
+        private LocalDateTime createdAt;
     }
 
     @Getter
