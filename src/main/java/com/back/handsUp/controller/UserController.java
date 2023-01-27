@@ -97,14 +97,13 @@ public class UserController {
 
     //회원 탈퇴
     @ResponseBody
-    @PatchMapping("/withdraw/{userIdx}")
-    public BaseResponse<Long> withdrawUser(Principal principal, @PathVariable("userIdx") Long userIdx){
+    @PatchMapping("/withdraw")
+    public BaseResponse<UserDto.ReqWithdraw> withdrawUser(Principal principal){
         try{
-            this.userService.withdrawUser(principal, userIdx);
+            UserDto.ReqWithdraw userIdx = this.userService.withdrawUser(principal);
             return new BaseResponse<>(userIdx);
         }catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
-
         }
     }
 
@@ -159,6 +158,17 @@ public class UserController {
             UserCharacterDto userCharacterDto = userService.getUserNicknameCharacter(principal);
             return new BaseResponse<>(userCharacterDto);
 
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("/nickname")
+    public BaseResponse<String> checkNickname(@RequestBody UserDto.ReqNickname nickname){
+        try {
+            this.userService.checkNickname(nickname);
+            return new BaseResponse<>("사용할 수 있는 닉네임입니다.");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }

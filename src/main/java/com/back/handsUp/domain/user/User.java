@@ -66,12 +66,6 @@ public class User extends BaseEntity {
         this.role = role;
     }
 
-    public UserDto.ReqWithdraw userBoards() {
-        return UserDto.ReqWithdraw.builder()
-                .userIdx(this.userIdx)
-                .build();
-    }
-
     public void changeStatus (String newStatus) {
         this.status = newStatus;
     }

@@ -1,12 +1,16 @@
 package com.back.handsUp.dto.board;
 
+import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.dto.user.CharacterDto;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 import com.back.handsUp.domain.user.Character;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +38,22 @@ public class BoardDto {
         private LocalDateTime createdAt;
     }
 
+    @Builder
+    public static class GetBoardMapAndSchool {
+        @JsonProperty
+        private String schoolName;
+        @JsonProperty
+        private List<GetBoardMap> getBoardMap;
+    }
+
+    @Builder
+    public static class GetBoardList {
+        @JsonProperty
+        private String schoolName;
+        @JsonProperty
+        private List<Board> getBoardList;
+    }
+
     @Getter
     @AllArgsConstructor
     @Builder
@@ -55,6 +75,14 @@ public class BoardDto {
         private String location;
         private String content;
         private LocalDateTime createdAt;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class MyBoard {
+        private Character character;
+        private List<BoardPreviewRes> myBoardList;
     }
 
     @Getter

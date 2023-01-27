@@ -38,9 +38,9 @@ public class BoardController {
     //전체 게시물 조회
     @ResponseBody
     @GetMapping("/showList")
-    public BaseResponse<List<Board>> showBoardList(Principal principal){
+    public BaseResponse<BoardDto.GetBoardList> showBoardList(Principal principal){
         try {
-            List<Board> getBoards = boardService.showBoardList(principal);
+            BoardDto.GetBoardList getBoards = boardService.showBoardList(principal);
             return new BaseResponse<>(getBoards);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
@@ -50,9 +50,9 @@ public class BoardController {
     //전체 게시물(지도 상) 조회
     @ResponseBody
     @GetMapping("/showMapList")
-    public BaseResponse<List<BoardDto.GetBoardMap>> showBoardMapList(Principal principal){
+    public BaseResponse<BoardDto.GetBoardMapAndSchool> showBoardMapList(Principal principal){
         try {
-            List<BoardDto.GetBoardMap> getBoardsMap = boardService.showBoardMapList(principal);
+            BoardDto.GetBoardMapAndSchool getBoardsMap = boardService.showBoardMapList(principal);
             return new BaseResponse<>(getBoardsMap);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
@@ -71,9 +71,9 @@ public class BoardController {
 
     //본인 게시글 조회
     @GetMapping("/myBoards")
-    public BaseResponse<List<BoardPreviewRes>> viewMyBoard(/*@RequestHeader("Access-Token") String accessToken*/ Principal principal) {
+    public BaseResponse<BoardDto.MyBoard> viewMyBoard(Principal principal) {
         try {
-            List<BoardPreviewRes> myBoards = boardService.viewMyBoard(principal);
+            BoardDto.MyBoard myBoards = boardService.viewMyBoard(principal);
             return new BaseResponse<>(myBoards);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());

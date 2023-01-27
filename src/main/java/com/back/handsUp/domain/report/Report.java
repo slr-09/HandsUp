@@ -1,6 +1,7 @@
 package com.back.handsUp.domain.report;
 
 import com.back.handsUp.baseResponse.BaseEntity;
+import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -48,12 +50,18 @@ public class Report extends BaseEntity {
     @JoinColumn(name = "reportedUserIdx")
     private User reportedUser;
 
+    @ManyToOne
+    @JoinColumn(name = "reportedBoardIdx")
+    @Nullable
+    private Board reportedBoard;
+
     @Builder
-    public Report(Long reportIdx, String contents, String status, User user, User reportedUser) {
+    public Report(Long reportIdx, String contents, String status, User user, User reportedUser, @Nullable Board reportedBoard) {
         this.reportIdx = reportIdx;
         this.contents = contents;
         this.status = status;
         this.user = user;
         this.reportedUser = reportedUser;
+        this.reportedBoard = reportedBoard;
     }
 }

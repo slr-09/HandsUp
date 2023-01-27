@@ -1,5 +1,6 @@
 package com.back.handsUp.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.validation.constraints.*;
@@ -51,7 +52,7 @@ public class UserDto {
 
     @Builder
     public static class ReqWithdraw {
-
+        @JsonProperty
         private Long userIdx;
     }
 

@@ -110,18 +110,29 @@ public class BoardService {
     }
 
     //전체 게시물 조회
-    public List<Board> showBoardList(Principal principal) throws BaseException {
+    public BoardDto.GetBoardList showBoardList(Principal principal) throws BaseException {
 
         List<Board> getBoards = getBoards(principal);
 
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
 
-        return getBoards;
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User user = optionalUser.get();
+
+        BoardDto.GetBoardList getBoardList = BoardDto.GetBoardList.builder()
+                .schoolName(user.getSchoolIdx().getName())
+                .getBoardList(getBoards)
+                .build();
+
+        return getBoardList;
 
     }
 
     // 전체 게시물(지도 상) 조회
     // 캐릭터, 위치(Board), boardIdx
-    public List<BoardDto.GetBoardMap> showBoardMapList(Principal principal) throws BaseException {
+    public BoardDto.GetBoardMapAndSchool showBoardMapList(Principal principal) throws BaseException {
 
         List<Board> getBoards = getBoards(principal);
 
@@ -149,8 +160,19 @@ public class BoardService {
             getBoardsMapList.add(getBoardMap);
         }
 
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
 
-        return getBoardsMapList;
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User user = optionalUser.get();
+
+        BoardDto.GetBoardMapAndSchool getBoardMapAndSchool = BoardDto.GetBoardMapAndSchool.builder()
+                .schoolName(user.getSchoolIdx().getName())
+                .getBoardMap(getBoardsMapList)
+                .build();
+
+        return getBoardMapAndSchool;
     }
 
     //게시물 조회 리스트,지도 중복 코드
@@ -182,7 +204,7 @@ public class BoardService {
             if(b.getUserIdx()==user && b.getStatus().equals("BLOCK")){
                 blockedBoard.add(b.getBoardIdx());
             }else{
-                if(!getBoards.contains(b.getBoardIdx())){
+                if(!getBoards.contains(b.getBoardIdx()) && b.getBoardIdx().getStatus().equals("ACTIVE")){
                     getBoards.add(b.getBoardIdx());
                 }
             }
@@ -239,7 +261,7 @@ public class BoardService {
 
     }
 
-    public List<BoardPreviewRes> viewMyBoard(Principal principal) throws BaseException{
+    public BoardDto.MyBoard viewMyBoard(Principal principal) throws BaseException{
         //long myIdx = 1L; // = jwtService.getUserIdx(token);
         log.info("principal.getName() = {}",principal.getName());
         Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
@@ -249,15 +271,21 @@ public class BoardService {
         }
         User user = optionalUser.get();
 
-        log.info("start boardUser");
+        Character character = user.getCharacter();
 
-        List<Board> boardUser = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE");
 
-        log.info("boardUserIdx = {}", boardUser);
+//        List<Board> boardUser = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE");
 
-        return boardUser.stream()
+
+
+        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE").stream()
                 .map(Board::toPreviewRes)
                 .collect(Collectors.toList());
+
+        BoardDto.MyBoard myBoard = BoardDto.MyBoard.builder().myBoardList(myBoardList).character(character).build();
+
+
+        return myBoard;
     }
 
     public void addBoard(Principal principal, BoardDto.GetBoardInfo boardInfo) throws BaseException {

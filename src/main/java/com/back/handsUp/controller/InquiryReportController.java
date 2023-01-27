@@ -32,11 +32,21 @@ public class InquiryReportController {
         }
     }
 
-    @PostMapping("/report")
-    public BaseResponse<String> report(Principal principal, @RequestBody ReportDto.PostReportContent postReportContent) {
+    @PostMapping("/report/board")
+    public BaseResponse<String> reportBoard(Principal principal, @RequestBody ReportDto.PostReportBoardContent postReportBoardContent) {
         try {
-            this.inquiryReportService.report(principal, postReportContent);
-            return new BaseResponse<>("신고가 접수되었습니다.");
+            String result = this.inquiryReportService.reportBoard(principal, postReportBoardContent);
+            return new BaseResponse<>(result);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @PostMapping("/report/user")
+    public BaseResponse<String> reportUser(Principal principal, @RequestBody ReportDto.PostReportUserContent postReportUserContent) {
+        try {
+            String result = this.inquiryReportService.reportUser(principal, postReportUserContent);
+            return new BaseResponse<>(result);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
