@@ -315,23 +315,15 @@ public class UserService {
 
 
     //회원 탈퇴 (patch)
-    public UserDto.ReqWithdraw withdrawUser(Principal principal, Long userIdx)  throws BaseException{
-
+    public UserDto.ReqWithdraw withdrawUser(Principal principal)  throws BaseException{
 
         Optional<User> optional = this.userRepository.findByEmail(principal.getName());
 
-        Optional<User> optional2 = this.userRepository.findByUserIdx(userIdx);
-
-        if(optional.isEmpty() || optional2.isEmpty()){
+        if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
         }
 
         User userEntity1 = optional.get();
-        User userEntity2 = optional2.get();
-
-        if(userEntity1!=userEntity2){
-            throw new BaseException(BaseResponseStatus.NON_CORRESPOND_USER);
-        }
 
         if(userEntity1.getStatus().equals("DELETE")){
             throw new BaseException(BaseResponseStatus.ALREADY_DELETE_USER);
@@ -352,7 +344,7 @@ public class UserService {
         }
 
         UserDto.ReqWithdraw response = UserDto.ReqWithdraw.builder()
-                .userIdx(userIdx)
+                .userIdx(userEntity1.getUserIdx())
                 .build();
 
 

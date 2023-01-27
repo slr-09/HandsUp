@@ -4,6 +4,7 @@ import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.user.Character;
+import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserCharacterDto;
@@ -97,14 +98,13 @@ public class UserController {
 
     //회원 탈퇴
     @ResponseBody
-    @PatchMapping("/withdraw/{userIdx}")
-    public BaseResponse<Long> withdrawUser(Principal principal, @PathVariable("userIdx") Long userIdx){
+    @PatchMapping("/withdraw")
+    public BaseResponse<UserDto.ReqWithdraw> withdrawUser(Principal principal){
         try{
-            this.userService.withdrawUser(principal, userIdx);
+            UserDto.ReqWithdraw userIdx = this.userService.withdrawUser(principal);
             return new BaseResponse<>(userIdx);
         }catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
-
         }
     }
 
