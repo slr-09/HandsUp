@@ -231,7 +231,7 @@ public class BoardService {
 
     }
 
-    public List<BoardPreviewRes> viewMyBoard(Principal principal) throws BaseException{
+    public BoardDto.MyBoard viewMyBoard(Principal principal) throws BaseException{
         //long myIdx = 1L; // = jwtService.getUserIdx(token);
         log.info("principal.getName() = {}",principal.getName());
         Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
@@ -241,15 +241,21 @@ public class BoardService {
         }
         User user = optionalUser.get();
 
-        log.info("start boardUser");
+        Character character = user.getCharacter();
 
-        List<Board> boardUser = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE");
 
-        log.info("boardUserIdx = {}", boardUser);
+//        List<Board> boardUser = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE");
 
-        return boardUser.stream()
+
+
+        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE").stream()
                 .map(Board::toPreviewRes)
                 .collect(Collectors.toList());
+
+        BoardDto.MyBoard myBoard = BoardDto.MyBoard.builder().myBoardList(myBoardList).character(character).build();
+
+
+        return myBoard;
     }
 
     public void addBoard(Principal principal, BoardDto.GetBoardInfo boardInfo) throws BaseException {

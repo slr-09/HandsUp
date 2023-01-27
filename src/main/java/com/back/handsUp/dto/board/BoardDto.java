@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 import com.back.handsUp.domain.user.Character;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,6 +56,14 @@ public class BoardDto {
         private String location;
         private String content;
         private LocalDateTime createdAt;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class MyBoard {
+        private Character character;
+        private List<BoardPreviewRes> myBoardList;
     }
 
     @Getter

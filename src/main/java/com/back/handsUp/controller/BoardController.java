@@ -71,9 +71,9 @@ public class BoardController {
 
     //본인 게시글 조회
     @GetMapping("/myBoards")
-    public BaseResponse<List<BoardPreviewRes>> viewMyBoard(/*@RequestHeader("Access-Token") String accessToken*/ Principal principal) {
+    public BaseResponse<BoardDto.MyBoard> viewMyBoard(Principal principal) {
         try {
-            List<BoardPreviewRes> myBoards = boardService.viewMyBoard(principal);
+            BoardDto.MyBoard myBoards = boardService.viewMyBoard(principal);
             return new BaseResponse<>(myBoards);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
