@@ -256,8 +256,7 @@ public class UserService {
 
         //not null 값이 null로 들어온 경우
         if(characterInfo.getEye().isBlank() || characterInfo.getEyeBrow().isBlank() || characterInfo.getHair().isBlank() ||
-        characterInfo.getNose().isBlank() || characterInfo.getMouth().isBlank()|| characterInfo.getHairColor().isBlank() ||
-                characterInfo.getSkinColor().isBlank() || characterInfo.getBackGroundColor().isBlank()){
+        characterInfo.getNose().isBlank() || characterInfo.getMouth().isBlank()|| characterInfo.getBackGroundColor().isBlank()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_CHARACTER_VALUE);
         }
 
