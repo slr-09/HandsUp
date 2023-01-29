@@ -67,12 +67,6 @@ public class UserService {
             throw new BaseException(BaseResponseStatus.EXIST_USER);
         }
 
-        //닉네임 중복 확인
-        optional = this.userRepository.findByNickname(user.getNickname());
-        if(!optional.isEmpty()){
-            throw new BaseException(BaseResponseStatus.EXIST_NICKNAME);
-        }
-
         String password = user.getPassword();
         try{
             String encodedPwd = passwordEncoder.encode(user.getPassword());
@@ -191,7 +185,7 @@ public class UserService {
         }
 
         //닉네임 중복 확인
-        optional = this.userRepository.findByNickname(nickname);
+        optional = this.userRepository.findByNicknameAndSchoolIdx(nickname, findUser.getSchoolIdx());
         if (!optional.isEmpty()) {
             throw new BaseException(EXIST_NICKNAME);
         }
@@ -262,8 +256,7 @@ public class UserService {
 
         //not null 값이 null로 들어온 경우
         if(characterInfo.getEye().isBlank() || characterInfo.getEyeBrow().isBlank() || characterInfo.getHair().isBlank() ||
-        characterInfo.getNose().isBlank() || characterInfo.getMouth().isBlank()|| characterInfo.getHairColor().isBlank() ||
-                characterInfo.getSkinColor().isBlank() || characterInfo.getBackGroundColor().isBlank()){
+        characterInfo.getNose().isBlank() || characterInfo.getMouth().isBlank()|| characterInfo.getBackGroundColor().isBlank()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_CHARACTER_VALUE);
         }
 
@@ -316,23 +309,15 @@ public class UserService {
 
 
     //회원 탈퇴 (patch)
-    public UserDto.ReqWithdraw withdrawUser(Principal principal, Long userIdx)  throws BaseException{
-
+    public UserDto.ReqWithdraw withdrawUser(Principal principal)  throws BaseException{
 
         Optional<User> optional = this.userRepository.findByEmail(principal.getName());
 
-        Optional<User> optional2 = this.userRepository.findByUserIdx(userIdx);
-
-        if(optional.isEmpty() || optional2.isEmpty()){
+        if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
         }
 
         User userEntity1 = optional.get();
-        User userEntity2 = optional2.get();
-
-        if(userEntity1!=userEntity2){
-            throw new BaseException(BaseResponseStatus.NON_CORRESPOND_USER);
-        }
 
         if(userEntity1.getStatus().equals("DELETE")){
             throw new BaseException(BaseResponseStatus.ALREADY_DELETE_USER);
@@ -353,7 +338,7 @@ public class UserService {
         }
 
         UserDto.ReqWithdraw response = UserDto.ReqWithdraw.builder()
-                .userIdx(userIdx)
+                .userIdx(userEntity1.getUserIdx())
                 .build();
 
 
@@ -385,5 +370,22 @@ public class UserService {
             .build();
 
         return userCharacterDto;
+    }
+
+    //닉네임 중복 확인
+    public void checkNickname(UserDto.ReqCheckNickname reqCheckNickname) throws BaseException {
+        Optional<School> optionalSchool = this.schoolRepository.findByName(reqCheckNickname.getSchoolName());
+        Optional<User> optional;
+
+        if(!optionalSchool.isEmpty()){
+            School school = optionalSchool.get();
+            optional = this.userRepository.findByNicknameAndSchoolIdx(reqCheckNickname.getNickname(), school);
+        } else {
+            optional = this.userRepository.findByNickname(reqCheckNickname.getNickname());
+        }
+
+        if(!optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.EXIST_NICKNAME);
+        }
     }
 }

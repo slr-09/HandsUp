@@ -1,5 +1,6 @@
 package com.back.handsUp.repository.user;
 
+import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,4 +11,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
     Optional<User> findByNickname(String nickname);
+    Optional<User> findByNicknameAndSchoolIdx(String nickname, School school);
 }

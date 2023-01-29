@@ -5,6 +5,7 @@ import com.back.handsUp.utils.exception.JwtAccessDeniedHandler;
 import com.back.handsUp.utils.exception.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -51,6 +52,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/users/reissue").permitAll()
                 .antMatchers("/users/certify").permitAll()
                 .antMatchers("/users/create/character").permitAll()
+                .antMatchers(HttpMethod.POST, "/users/nickname").permitAll()
+
+                .antMatchers(HttpMethod.GET, "/help/report").hasAnyRole("ADMIN")
+                .antMatchers(HttpMethod.GET,"/help/inquiry").hasAnyRole("ADMIN")
 
                 .antMatchers("/boards/test").permitAll()
                 .anyRequest().authenticated()  // 나머지 API 는 전부 인증 필요
