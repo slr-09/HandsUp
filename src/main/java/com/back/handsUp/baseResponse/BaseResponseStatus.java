@@ -51,6 +51,11 @@ public enum BaseResponseStatus {
     ILLEGAL_JWT(false,4046,"JWT 토큰이 잘못되었습니다."),
     JWT_ERROR(false,4047,"JWT 토큰에 오류가 발생했습니다."),
     ACCESS_DENIED_USER(false,4048,"접근 권한이 없는 유저입니다"),
+    SELF_REPORT_ERROR(false, 4049, "본인을 신고할 수 없습니다."),
+    REPORTED_ERROR(false, 4050, "이미 신고가 접수되었습니다."),
+    SELF_BLOCK_ERROR(false, 4051, "본인을 차단할 수 없습니다."),
+    BLOCKED_USER_ERROR(false, 4052, "이미 차단된 유저입니다."),
+    BLOCKED_BOARD_ERROR(false, 4053, "이미 차단된 게시물입니다."),
 
 
 

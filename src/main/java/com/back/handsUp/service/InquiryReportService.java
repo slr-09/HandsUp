@@ -17,16 +17,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotBlank;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
+@Transactional
 public class InquiryReportService {
 
     private final InquiryRepository inquiryRepository;
@@ -61,9 +64,7 @@ public class InquiryReportService {
 
     public String reportBoard(Principal principal, ReportDto.PostReportBoardContent postReportBoardContent) throws BaseException {
 
-        String duplicateResult = "이미 신고된 게시물입니다";
         String successResult = "게시물을 성공적으로 신고하였습니다";
-        String selfReportResult = "본인 게시물은 차단할 수 없습니다";
 
         Optional<User> optional = this.userRepository.findByEmail(principal.getName());
 
@@ -89,8 +90,8 @@ public class InquiryReportService {
 
         User reportedUser = optionalReportedUser.get();
 
-        if (user.getUserIdx() == reportedUser.getUserIdx()) {
-            return selfReportResult;
+        if (Objects.equals(user.getUserIdx(), reportedUser.getUserIdx())) {
+            throw new BaseException(BaseResponseStatus.SELF_REPORT_ERROR);
         }
 
         ReportDto.PostReportBoardInfo postReportBoardInfo = ReportDto.PostReportBoardInfo.builder()
@@ -99,7 +100,7 @@ public class InquiryReportService {
                 .build();
 
         if (checkReportDuplicate(user, reportedUser, reportedBoard)) {
-            return duplicateResult;
+            throw new BaseException(BaseResponseStatus.REPORTED_ERROR);
         }
 
         log.info("-------------------report builder start--------------------");
@@ -123,9 +124,7 @@ public class InquiryReportService {
 
     public String reportUser(Principal principal, ReportDto.PostReportUserContent postReportUserContent) throws BaseException {
 
-        String duplicateResult = "이미 신고된 유저입니다";
         String successResult = "유저를 성공적으로 신고하였습니다";
-        String selfReportResult = "본인을 신고할 수 없습니다";
 
         Optional<User> optional = this.userRepository.findByEmail(principal.getName());
 
@@ -145,11 +144,11 @@ public class InquiryReportService {
         User reportedUser = optionalReportedUser.get();
 
         if (Objects.equals(user.getUserIdx(), reportedUser.getUserIdx())) {
-            return selfReportResult;
+            throw new BaseException(BaseResponseStatus.SELF_REPORT_ERROR);
         }
 
         if (checkReportDuplicate(user, reportedUser, null)) {
-            return duplicateResult;
+            throw new BaseException(BaseResponseStatus.REPORTED_ERROR);
         }
 
         ReportDto.PostReportUserInfo postReportUserInfo = ReportDto.PostReportUserInfo.builder()
@@ -209,6 +208,7 @@ public class InquiryReportService {
         List<ReportDto.GetReport> getReportInfo = new ArrayList<>();
 
         for (Report r : getReport){
+
             ReportDto.GetReport dto = ReportDto.GetReport.builder()
                     .reportedUserIdx(r.getReportedUser().getUserIdx())
                     .content(r.getContents())
@@ -218,5 +218,12 @@ public class InquiryReportService {
         }
 
         return getReportInfo;
+    }
+
+    public List<ReportDto.GetAllReport> getNotSolvedReport(Principal principal) throws BaseException {
+
+        List<ReportDto.GetAllReport> getNotSolvedReport = reportRepository.findAllByStatusNot("SOLVED").stream().map(Report::ToGetReport).collect(Collectors.toList());
+
+        return getNotSolvedReport;
     }
 }
