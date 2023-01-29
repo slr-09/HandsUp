@@ -9,9 +9,15 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
@@ -32,10 +38,11 @@ public class MailService {
         message.addRecipients(MimeMessage.RecipientType.TO, emailTo); //보내는 사람
         message.setSubject("핸즈업 이메일 인증번호:"); //메일 제목
 
+
         // 메일 내용 메일의 subtype을 html로 지정하여 html문법 사용 가능
         String msg="";
         msg += "<head> <link href=\'http://fonts.googleapis.com/css?family=Roboto\' rel=\'stylesheet\' type=\'text/css\'></head>";
-        msg += "<div style=\"text-align: center; margin: 20px;\"> <img src=\"handsUpLogo_orange.png\" width=\"60px\" height=\"18px\" ></div>";
+        msg += "<div style=\"text-align: center; margin: 20px;\"> <img src=\"https://s3.us-west-2.amazonaws.com/secure.notion-static.com/dd90963a-3569-40eb-b6fa-0ea048da1691/handsUpLogo_orange.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20230129%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20230129T115238Z&X-Amz-Expires=86400&X-Amz-Signature=cc8b247f51654ea86d41325429fe32b9b6a25acf50d768b88017557137e2c6f9&X-Amz-SignedHeaders=host&response-content-disposition=filename%3D%22handsUpLogo_orange.png%22&x-id=GetObject\"></div>";
         msg +="<hr size=\"1px\" color=\"#DBDBDB\">";
         msg += "<h1 style=\"font-size: 16px; text-align: center;  margin-top: 40px; color: #111111; font-family: 'Roboto'; font-weight: 600;\">이메일 주소 확인</h1>";
         msg += "<div style=\"font-size: 12px; text-align: center; color: #747474; font-family: 'Roboto'; font-weight: 400;\">아래 인증번호를 회원가입에서 입력해주세요.</div>";
