@@ -30,7 +30,8 @@ public class UserController {
     @PostMapping("/signup")
     public BaseResponse<String> signUp(@Valid @RequestBody UserDto.ReqSignUp user, BindingResult result){
         if (result.hasErrors()){
-            return new BaseResponse<>(BaseResponseStatus.INVALID_REQUEST);
+            String message = result.getFieldError().getDefaultMessage();
+            return new BaseResponse<>(false, 4003, message);
         }
 
         try {
@@ -45,7 +46,8 @@ public class UserController {
     @PostMapping("/login")
     public BaseResponse<TokenDto> logIn(@Valid @RequestBody UserDto.ReqLogIn user, BindingResult result){
         if (result.hasErrors()){
-            return new BaseResponse<>(BaseResponseStatus.INVALID_REQUEST);
+            String message = result.getFieldError().getDefaultMessage();
+            return new BaseResponse<>(false, 4003, message);
         }
 
         try {

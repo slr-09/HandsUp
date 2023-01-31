@@ -37,4 +37,11 @@ public class BaseResponse<T> {
         this.message = status.getMessage();
         this.statusCode = status.getStatusCode();
     }
+
+    //실패 시 param: isSuccess, statusCode, message
+    public BaseResponse(Boolean isSuccess, int statusCode, String message) {
+        this.isSuccess = isSuccess;
+        this.statusCode = statusCode;
+        this.message = message;
+    }
 }
