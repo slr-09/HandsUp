@@ -1,7 +1,6 @@
 package com.back.handsUp.service;
 
 import com.back.handsUp.baseResponse.BaseException;
-import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,9 +9,15 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
@@ -32,13 +37,20 @@ public class MailService {
 
         message.addRecipients(MimeMessage.RecipientType.TO, emailTo); //보내는 사람
         message.setSubject("핸즈업 이메일 인증번호:"); //메일 제목
+
+
         // 메일 내용 메일의 subtype을 html로 지정하여 html문법 사용 가능
         String msg="";
-        msg += "<h1 style=\"font-size: 30px; padding-right: 30px; padding-left: 30px;\">이메일 주소 확인</h1>";
-        msg += "<p style=\"font-size: 17px; padding-right: 30px; padding-left: 30px;\">아래 인증번호를 회원가입 화면에서 입력해주세요.</p>";
-        msg += "<div style=\"padding-right: 30px; padding-left: 30px; margin: 32px 0 40px;\"><table style=\"border-collapse: collapse; border: 0; background-color: #F4F4F4; height: 70px; table-layout: fixed; word-wrap: break-word; border-radius: 6px;\"><tbody><tr><td style=\"text-align: center; vertical-align: middle; font-size: 30px;\">";
+        msg += "<head> <link href=\'http://fonts.googleapis.com/css?family=Roboto\' rel=\'stylesheet\' type=\'text/css\'></head>";
+        msg += "<div style=\"text-align: center; margin: 20px;\"> <img src=\"https://s3.us-west-2.amazonaws.com/secure.notion-static.com/b24987da-502b-44a3-ae66-2fec399e7846/handsUpLogo_orange_2x.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20230131%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20230131T083455Z&X-Amz-Expires=86400&X-Amz-Signature=179f5daeb90b8582c0b78594cb69e7b15bc8e1e8204468aaf0ff70b30e6efb0f&X-Amz-SignedHeaders=host&response-content-disposition=filename%3D%22handsUpLogo_orange_2x.png%22&x-id=GetObject\"></div>";
+        msg +="<hr size=\"1px\" color=\"#DBDBDB\">";
+        msg += "<h1 style=\"font-size: 16px; text-align: center;  margin-top: 40px; color: #111111; font-family: 'Roboto'; font-weight: 600;\">이메일 주소 확인</h1>";
+        msg += "<div style=\"font-size: 12px; text-align: center; color: #747474; font-family: 'Roboto'; font-weight: 400;\">아래 인증번호를 회원가입에서 입력해주세요.</div>";
+        msg += "<div style=\"padding-right: 30px; padding-left: 30px; margin: 32px 0 40px;\">";
+        msg +=  "<table style=\"border-collapse: collapse; border: 0; background-color: #F47C16; height: 61px; table-layout: fixed; word-wrap: break-word; border-radius: 15px; margin-top: 10px; margin-left:auto; margin-right:auto;\"><tbody> <tr><td style = \"text-align: center; vertical-align: middle; font-size: 32px; color: #FFFFFF; font-family: 'Roboto'; font-weight: 500; padding-left: 109px; padding-right: 109px; padding-top: 11px; padding-bottom: 12px; text-align: center;\">";
         msg += code;
         msg += "</td></tr></tbody></table></div>";
+        msg += "<div style=\"font-size: 12px;  text-align: center; color: #111111; font-family: 'Roboto'; font-weight: 500;\"><b>핸즈업</b>에 오신 것을 환영합니다🖐🏻</div>";
 
         message.setText(msg, "utf-8", "html"); //내용, charset타입, subtype
         message.setFrom(new InternetAddress(email,"HandsUp_Official")); //보내는 사람의 메일 주소, 보내는 사람 이름
