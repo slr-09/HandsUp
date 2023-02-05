@@ -4,6 +4,7 @@ import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.*;
 import com.back.handsUp.domain.chat.ChatRoom;
+import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardDto;
@@ -14,6 +15,7 @@ import com.back.handsUp.repository.board.BoardTagRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.board.TagRepository;
 import com.back.handsUp.repository.chat.ChatRoomRepository;
+import com.back.handsUp.repository.fcm.FcmTokenRepository;
 import com.back.handsUp.repository.user.UserRepository;
 import com.back.handsUp.utils.FirebaseCloudMessageService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,7 @@ public class BoardService {
     private final BoardUserRepository boardUserRepository;
     private final FirebaseCloudMessageService firebaseCloudMessageService;
     private final ChatRoomRepository chatRoomRepository;
+    private final FcmTokenRepository fcmTokenRepository;
 
 
     //단일 게시물 조회
@@ -254,8 +257,18 @@ public class BoardService {
 
 //Todo : User FcmToken 추가 후 주석 해제.
 //      하트 알림 전송 부분.
+//
+//        Optional<FcmToken> optionalFcmToken = fcmTokenRepository.findFcmTokenByUser(boardUser);
+//        if (optionalFcmToken.isEmpty()) {
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_FCMTOKEN);
+//        }
+//        FcmToken fcmToken = optionalFcmToken.get();
 //        if (!Objects.equals(user.getUserIdx(), boardUser.getUserIdx())) {
-//                firebaseCloudMessageService.sendMessageTo(boardUser.getFcmToken(), "Hands Up", "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
+//            try {
+//                firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), boardUser.getNickname(), "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
+//            } catch (Exception e) {
+//                throw new BaseException(BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR);
+//            }
 //        }
 
 
