@@ -5,6 +5,7 @@ import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
+import com.back.handsUp.dto.fcmToken.FcmTokenDto;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserCharacterDto;
