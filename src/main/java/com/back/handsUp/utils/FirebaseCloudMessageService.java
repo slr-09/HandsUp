@@ -1,5 +1,10 @@
 package com.back.handsUp.utils;
 
+import com.back.handsUp.baseResponse.BaseException;
+import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.fcmToken.FcmToken;
+import com.back.handsUp.domain.user.User;
+import com.back.handsUp.repository.fcm.FcmTokenRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -11,10 +16,14 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class FirebaseCloudMessageService {
+
+    private final FcmTokenRepository fcmTokenRepository;
 
     private final String API_URL = "https://fcm.googleapis.com/v1/projects/handsup-c4213/messages:send";
 
@@ -68,5 +77,52 @@ public class FirebaseCloudMessageService {
         googleCredentials.refreshIfExpired();
 
         return googleCredentials.getAccessToken().getTokenValue();
+    }
+
+    //토큰 엔티티 등록
+    public void saveToken(String fcmToken, User user) throws BaseException {
+        FcmToken fcmTokenEntity = FcmToken.builder()
+                .fcmToken(fcmToken)
+                .user(user).build();
+        try {
+            fcmTokenRepository.save(fcmTokenEntity);
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_INSERT_ERROR);
+        }
+    }
+
+    //토큰 엔티티 삭제
+    public void deleteToken(User user) throws BaseException {
+        Optional<FcmToken> optionalFcmTokenEntity = fcmTokenRepository.findFcmTokenByUser(user);
+        if (optionalFcmTokenEntity.isEmpty()) {
+            return;
+        }
+        FcmToken fcmTokenEntity = optionalFcmTokenEntity.get();
+        try {
+            fcmTokenRepository.delete(fcmTokenEntity);
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_DELETE_ERROR);
+        }
+    }
+
+    //front 에서 보낸 fcm 토큰과 서버의 Fcm 토큰이 맞는 지 확인
+    public boolean checkToken(String fcmToken, User user) throws BaseException {
+        Optional<FcmToken> optionalFcmTokenEntity = fcmTokenRepository.findFcmTokenByUser(user);
+        if (optionalFcmTokenEntity.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_FCMTOKEN);
+        }
+        FcmToken fcmTokenEntity = optionalFcmTokenEntity.get();
+
+        return Objects.equals(fcmTokenEntity.getFcmToken(), fcmToken);
+    }
+
+    //토큰이 없으면 save, 있지만 다르면 수정, 있고 같으면 아무일 없음.
+    public void overWriteToken(String fcmToken, User user) throws BaseException {
+        Optional<FcmToken> optionalFcmToken = fcmTokenRepository.findFcmTokenByUser(user);
+        if (optionalFcmToken.isEmpty()) {
+            saveToken(fcmToken, user);
+        } else if (!checkToken(fcmToken, user)) {
+            optionalFcmToken.get().updateToken(fcmToken);
+        }
     }
 }
