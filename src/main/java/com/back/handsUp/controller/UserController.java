@@ -4,7 +4,7 @@ import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.user.Character;
-import com.back.handsUp.dto.fcmToken.FcmTokenDto;
+import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserCharacterDto;
@@ -28,9 +28,10 @@ public class UserController {
 
     @ResponseBody
     @PostMapping("/signup")
-    public BaseResponse<String> signUp(@Valid @RequestBody UserDto.ReqSignUp user, BindingResult result) {
-        if (result.hasErrors()) {
-            return new BaseResponse<>(BaseResponseStatus.INVALID_REQUEST);
+    public BaseResponse<String> signUp(@Valid @RequestBody UserDto.ReqSignUp user, BindingResult result){
+        if (result.hasErrors()){
+            String message = result.getFieldError().getDefaultMessage();
+            return new BaseResponse<>(false, 4003, message);
         }
 
         try {
@@ -43,9 +44,10 @@ public class UserController {
 
     @ResponseBody
     @PostMapping("/login")
-    public BaseResponse<TokenDto> logIn(@Valid @RequestBody UserDto.ReqLogIn user, BindingResult result) {
-        if (result.hasErrors()) {
-            return new BaseResponse<>(BaseResponseStatus.INVALID_REQUEST);
+    public BaseResponse<TokenDto> logIn(@Valid @RequestBody UserDto.ReqLogIn user, BindingResult result){
+        if (result.hasErrors()){
+            String message = result.getFieldError().getDefaultMessage();
+            return new BaseResponse<>(false, 4003, message);
         }
 
         try {
@@ -58,8 +60,8 @@ public class UserController {
 
     @ResponseBody
     @PostMapping("/logout")
-    public BaseResponse<String> logOut(Principal principal) {
-        try {
+    public BaseResponse<String> logOut(Principal principal){
+        try{
             this.userService.logOut(principal);
             return new BaseResponse<>("로그아웃이 완료되었습니다.");
         } catch (BaseException e) {
@@ -68,14 +70,15 @@ public class UserController {
     }
 
 
+
     @ResponseBody
     @PostMapping("create/character")
-    public BaseResponse<Long> createCharacter(@RequestBody CharacterDto.GetCharacterInfo characterInfo) {
+    public BaseResponse<Long> createCharacter(@RequestBody CharacterDto.GetCharacterInfo characterInfo){
 
-        try {
+        try{
             Character character = this.userService.createCharacter(characterInfo);
             return new BaseResponse<>(character.getCharacterIdx());
-        } catch (BaseException exception) {
+        }catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
         }
 
@@ -97,11 +100,11 @@ public class UserController {
     //회원 탈퇴
     @ResponseBody
     @PatchMapping("/withdraw")
-    public BaseResponse<UserDto.ReqWithdraw> withdrawUser(Principal principal) {
-        try {
+    public BaseResponse<UserDto.ReqWithdraw> withdrawUser(Principal principal){
+        try{
             UserDto.ReqWithdraw userIdx = this.userService.withdrawUser(principal);
             return new BaseResponse<>(userIdx);
-        } catch (BaseException exception) {
+        }catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
         }
     }
@@ -121,7 +124,7 @@ public class UserController {
     //학교 인증
     @ResponseBody
     @PostMapping("/certify")
-    public BaseResponse<String> certify(@RequestBody UserDto.ResEmail resEmail) {
+    public BaseResponse<String> certify(@RequestBody UserDto.ResEmail resEmail){
         try {
             String code = this.mailService.sendMail(resEmail.getEmail());
             return new BaseResponse<>(code);
@@ -131,28 +134,28 @@ public class UserController {
     }
 
     @PatchMapping("/nickname")
-    public BaseResponse<String> updateUsername(Principal principal, @RequestBody UserDto.ReqNickname nickname) {
+    public BaseResponse<String> updateUsername(Principal principal, @RequestBody UserDto.ReqNickname nickname){
 
-        try {
+        try{
             userService.updateNickname(principal, nickname.getNickname());
             return new BaseResponse<>("닉네임을 수정하였습니다.");
-        } catch (BaseException e) {
+        } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
     }
 
     @PatchMapping("/character")
-    public BaseResponse<String> updateCharacter(Principal principal, @RequestBody CharacterDto.GetCharacterInfo characterInfo) {
-        try {
+    public BaseResponse<String> updateCharacter(Principal principal, @RequestBody CharacterDto.GetCharacterInfo characterInfo){
+        try{
             userService.updateChatacter(principal, characterInfo);
             return new BaseResponse<>("캐릭터를 수정하였습니다.");
-        } catch (BaseException e) {
+        } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
     }
 
     @GetMapping("")
-    public BaseResponse<UserCharacterDto> getNicknameAndCharacter(Principal principal) {
+    public BaseResponse<UserCharacterDto> getNicknameAndCharacter(Principal principal){
         try {
             UserCharacterDto userCharacterDto = userService.getUserNicknameCharacter(principal);
             return new BaseResponse<>(userCharacterDto);
@@ -164,7 +167,7 @@ public class UserController {
 
     @ResponseBody
     @PostMapping("/nickname")
-    public BaseResponse<String> checkNickname(@RequestBody UserDto.ReqCheckNickname checkNickname) {
+    public BaseResponse<String> checkNickname(@RequestBody UserDto.ReqCheckNickname checkNickname){
         try {
             this.userService.checkNickname(checkNickname);
             return new BaseResponse<>("사용할 수 있는 닉네임입니다.");
