@@ -39,6 +39,10 @@ public class UserDto {
         @Pattern(regexp = "^[a-zA-z0-9]{8,}$", message = "비밀번호는 특수문자를 제외한 8자리 이상이어야 합니다." )
         @NotBlank(message = "비밀번호는 필수 입력 값입니다.")
         private String password;
+
+//        todo : fcmToken frontEnd 구현시 주석 해제
+//        private String fcmToken;
+
     }
 
  
@@ -77,5 +81,12 @@ public class UserDto {
     public static class ReqCheckNickname {
         private String schoolName;
         private String nickname;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    public static class ReqStartApp {
+        private String fcmToken;
     }
 }
