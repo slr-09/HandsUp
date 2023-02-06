@@ -17,4 +17,7 @@ public interface BoardTagRepository extends JpaRepository<BoardTag, Long> {
 
     @Query("select b.tagIdx from BoardTag b where b.boardIdx.boardIdx = ?1")
     Optional<Tag> findTagIdxByBoardIdx(Long boardIdx);
+
+    @Query("select b.tagIdx.name from BoardTag b where b.boardIdx = ?1")
+    Optional<String> findTagNameByBoard(Board board);
 }
