@@ -45,7 +45,8 @@ public class ChatService {
         }
         ChatRoom chatRoom = optional1.get();
 
-        Optional<BoardUser> optional2 = this.boardUserRepository.findBoardUserByBoardIdx(chatRoom.getBoardIdx());
+        Optional<BoardUser> optional2 = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(chatRoom.getBoardIdx(), "WRITE")
+                .stream().findFirst();
         if(optional2.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
         }
