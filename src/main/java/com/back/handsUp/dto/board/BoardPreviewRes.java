@@ -13,15 +13,17 @@ public class BoardPreviewRes {
     private Long boardIdx;
     private String status;
     private String content;
-    private String location;
+    private double latitude;
+    private double longitude;
     private LocalDateTime createdAt;
 
     @Builder
-    public BoardPreviewRes(Long boardIdx, String status, String content, String location, LocalDateTime createdAt) {
+    public BoardPreviewRes(Long boardIdx, String status, String content, double latitude, double longitude, LocalDateTime createdAt) {
         this.boardIdx = boardIdx;
         this.status = status;
         this.content = content;
-        this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.createdAt = createdAt;
     }
 }

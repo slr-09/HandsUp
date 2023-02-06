@@ -31,8 +31,14 @@ public class Board {
     @javax.persistence.Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @javax.persistence.Column(nullable = true, length= 100)
-    private String location;
+    //위도
+    @javax.persistence.Column(nullable = true)
+    private double latitude;
+
+    //경도
+    @javax.persistence.Column(nullable = true)
+    private double longitude;
+
 
     @javax.persistence.Column(nullable = false, length= 10)
     private String indicateLocation;
@@ -51,9 +57,10 @@ public class Board {
     private String status;
 
     @Builder
-    public Board(String content, String location, String indicateLocation, int messageDuration, String status) {
+    public Board(String content, double latitude, double longitude, String indicateLocation, int messageDuration, String status) {
         this.content = content;
-        this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.indicateLocation = indicateLocation;
         this.messageDuration = messageDuration;
         this.status = status;
@@ -64,13 +71,15 @@ public class Board {
                 .boardIdx(this.boardIdx)
                 .status(this.status)
                 .content(this.content)
-                .location(this.location)
+                .latitude(this.latitude)
+                .longitude(this.longitude)
                 .createdAt(this.createdAt)
                 .build();
     }
-    public void changeBoard(String content, String location, String indicateLocation, int messageDuration) {
+    public void changeBoard(String content, double latitude, double longitude, String indicateLocation, int messageDuration) {
         this.content = content;
-        this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.indicateLocation = indicateLocation;
         this.messageDuration = messageDuration;
     }

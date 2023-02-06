@@ -63,15 +63,6 @@ public class BoardService {
         }
         Board board = optionalBoard.get();
 
-
-        String locationInfo;
-        //위치 정보 동의하면 locationInfo 에 위치 담기
-        if (Objects.equals(board.getIndicateLocation(), "Y")) {
-            locationInfo = board.getLocation();
-        } else {
-            locationInfo = "위치 비밀";
-        }
-
         //like 확인
         Optional<BoardUser> optionalBoardUserEntity = boardUserRepository.findBoardUserByBoardIdxAndUserIdx(board, user);
 
@@ -107,7 +98,8 @@ public class BoardService {
                 .tag(tag.getName())
                 .nickname(boardUser.getNickname())
                 .messageDuration(board.getMessageDuration())
-                .location(locationInfo)
+                .latitude(board.getLatitude())
+                .longitude(board.getLongitude())
                 .didLike(didLike)
                 .createdAt(board.getCreatedAt()).build();
     }
@@ -156,7 +148,8 @@ public class BoardService {
             BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
                     .boardIdx(b.getBoardIdx())
                     .character(characterInfo)
-                    .location(b.getLocation())
+                    .latitude(b.getLatitude())
+                    .longitude(b.getLongitude())
                     .createdAt(b.getCreatedAt())
                     .build();
 
@@ -303,18 +296,13 @@ public class BoardService {
 
     public void addBoard(Principal principal, BoardDto.GetBoardInfo boardInfo) throws BaseException {
 
-        if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLocation() == null){
-            throw new BaseException(BaseResponseStatus.LOCATION_ERROR);
-        }
-
-        if(boardInfo.getMessageDuration()<1 || boardInfo.getMessageDuration()>48){
-            throw new BaseException(BaseResponseStatus.MESSAGEDURATION_ERROR);
-        }
+        checkLocationError(boardInfo);
 
         Board boardEntity = Board.builder()
                 .content(boardInfo.getContent())
                 .indicateLocation(boardInfo.getIndicateLocation())
-                .location(boardInfo.getLocation())
+                .latitude(boardInfo.getLatitude())
+                .longitude(boardInfo.getLongitude())
                 .messageDuration(boardInfo.getMessageDuration())
                 .build();
         try{
@@ -381,13 +369,7 @@ public class BoardService {
     }
 
     public void patchBoard(Principal principal, Long boardIdx, BoardDto.GetBoardInfo boardInfo) throws BaseException{
-        if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLocation() == null){
-            throw new BaseException(BaseResponseStatus.LOCATION_ERROR);
-        }
-
-        if(boardInfo.getMessageDuration()<1 || boardInfo.getMessageDuration()>48){
-            throw new BaseException(BaseResponseStatus.MESSAGEDURATION_ERROR);
-        }
+        checkLocationError(boardInfo);
 
         Optional<Board> optional = this.boardRepository.findByBoardIdx(boardIdx);
         if(optional.isEmpty()){
@@ -407,7 +389,7 @@ public class BoardService {
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
         }
 
-        boardEntity.changeBoard(boardInfo.getContent(), boardInfo.getLocation(), boardInfo.getIndicateLocation(), boardInfo.getMessageDuration());
+        boardEntity.changeBoard(boardInfo.getContent(), boardInfo.getLatitude(), boardInfo.getLongitude(), boardInfo.getIndicateLocation(), boardInfo.getMessageDuration());
         try{
             this.boardRepository.save(boardEntity);
         } catch (Exception e) {
@@ -422,6 +404,16 @@ public class BoardService {
             setTags(boardInfo, boardEntity);
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
+        }
+    }
+
+    private void checkLocationError(BoardDto.GetBoardInfo boardInfo) throws BaseException {
+        if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLatitude() == 0.0 && boardInfo.getLongitude() == 0.0){
+            throw new BaseException(BaseResponseStatus.LOCATION_ERROR);
+        }
+
+        if(boardInfo.getMessageDuration()<1 || boardInfo.getMessageDuration()>48){
+            throw new BaseException(BaseResponseStatus.MESSAGEDURATION_ERROR);
         }
     }
 
@@ -499,7 +491,6 @@ public class BoardService {
                         .tagIdx(targetTag)
                         .build();
                 this.boardTagRepository.save(boardTagEntity);
-                log.info("new boardTag save done");
 
             } else{
                 BoardTag boardTagEntity = optional.get();
