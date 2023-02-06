@@ -38,7 +38,8 @@ public class User extends BaseEntity {
     @Column(columnDefinition="date default (current_date)")
     private Date nicknameUpdatedAt;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    //채팅방 내 게시물 조회를 위해 fetch = eager
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "characterIdx")
     private Character character;
 
