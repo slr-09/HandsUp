@@ -63,15 +63,6 @@ public class BoardService {
         }
         Board board = optionalBoard.get();
 
-
-        String locationInfo;
-        //위치 정보 동의하면 locationInfo 에 위치 담기
-        if (Objects.equals(board.getIndicateLocation(), "Y")) {
-            locationInfo = board.getLocation();
-        } else {
-            locationInfo = "위치 비밀";
-        }
-
         //like 확인
         Optional<BoardUser> optionalBoardUserEntity = boardUserRepository.findBoardUserByBoardIdxAndUserIdx(board, user);
 
@@ -115,7 +106,7 @@ public class BoardService {
     //전체 게시물 조회
     public BoardDto.GetBoardList showBoardList(Principal principal) throws BaseException {
 
-        List<BoardDto.BoardWithTag> getBoards = getBoards(principal);
+        List<Board> getBoards = getBoards(principal);
 
         Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
 
@@ -137,12 +128,12 @@ public class BoardService {
     // 캐릭터, 위치(Board), boardIdx
     public BoardDto.GetBoardMapAndSchool showBoardMapList(Principal principal) throws BaseException {
 
-        List<BoardDto.BoardWithTag> getBoards = getBoards(principal);
+        List<Board> getBoards = getBoards(principal);
 
         List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
 
-        for(BoardDto.BoardWithTag b : getBoards) {
-            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(b.getBoard(), "WRITE").stream().findFirst();
+        for(Board b : getBoards) {
+            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(b, "WRITE").stream().findFirst();
             if(optional.isEmpty()){
                 throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
             }
@@ -152,17 +143,12 @@ public class BoardService {
             CharacterDto.GetCharacterInfo characterInfo = new CharacterDto.GetCharacterInfo(character.getEye(),
                     character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
                     character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
-            Optional<String> opTagName = this.boardTagRepository.findTagNameByBoard(b.getBoard());
-            String tagName;
-            if (opTagName.isEmpty()) {
-                tagName = null;
-            } else tagName = opTagName.get();
+
             BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
-                    .boardIdx(b.getBoard().getBoardIdx())
+                    .boardIdx(b.getBoardIdx())
                     .character(characterInfo)
-                    .location(b.getBoard().getLocation())
-                    .createdAt(b.getBoard().getCreatedAt())
-                    .tag(tagName)
+                    .location(b.getLocation())
+                    .createdAt(b.getCreatedAt())
                     .build();
 
             getBoardsMapList.add(getBoardMap);
@@ -184,7 +170,7 @@ public class BoardService {
     }
 
     //게시물 조회 리스트,지도 중복 코드
-    public List<BoardDto.BoardWithTag> getBoards(Principal principal) throws BaseException {
+    public List<Board> getBoards(Principal principal) throws BaseException {
         //조회하는 유저
         Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
 
@@ -195,7 +181,7 @@ public class BoardService {
 
         List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(user.getSchoolIdx(), "ACTIVE");
 
-        List<BoardDto.BoardWithTag> getBoards = new ArrayList<>();
+        List<Board> getBoards = new ArrayList<>();
         List<Board> blockedBoard = new ArrayList<>();
 
         LocalDateTime currentTime = LocalDateTime.now();
@@ -213,22 +199,7 @@ public class BoardService {
                 blockedBoard.add(b.getBoardIdx());
             }else{
                 if(!getBoards.contains(b.getBoardIdx()) && b.getBoardIdx().getStatus().equals("ACTIVE")){
-                    Board shownBoard = b.getBoardIdx();
-                    String tagName;
-//                    Optional<Tag> tag = boardTagRepository.findTagIdxByBoardIdx(shownBoard.boardIdx);
-//                    if (tag.isEmpty()) {
-//                        tagName = null;
-//                    } else tagName = tag.get().getName();
-
-                    Optional<String> opTagName = this.boardTagRepository.findTagNameByBoard(shownBoard);
-                    if (opTagName.isEmpty()) {
-                        tagName = null;
-                    }else tagName = opTagName.get();
-                    BoardDto.BoardWithTag boardWithTag = BoardDto.BoardWithTag.builder()
-                            .board(shownBoard)
-                            .tag(tagName).build();
-
-                    getBoards.add(boardWithTag);
+                    getBoards.add(b.getBoardIdx());
                 }
             }
         }

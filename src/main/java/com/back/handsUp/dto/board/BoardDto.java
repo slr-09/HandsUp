@@ -22,7 +22,8 @@ public class BoardDto {
     @Builder
     public static class GetBoardInfo {
         private String indicateLocation;
-        private String location;
+        private double latitude;
+        private double longitude;
         private String content;
         private String tag;
         private int messageDuration;
@@ -35,7 +36,8 @@ public class BoardDto {
     public static class GetBoardMap {
         private Long boardIdx;
         private CharacterDto.GetCharacterInfo character;
-        private String location;
+        private double latitude;
+        private double longitude;
         private LocalDateTime createdAt;
         private String tag;
     }
@@ -68,7 +70,8 @@ public class BoardDto {
     @Builder
     public static class SingleBoardRes {
         private String nickname;
-        private String location;
+        private double latitude;
+        private double longitude;
         private String content;
         private String tag;
         private String didLike;
@@ -81,7 +84,8 @@ public class BoardDto {
     @Builder
     public static class BriefBoard {
         private Long boardIdx;
-        private String location;
+        private double latitude;
+        private double longitude;
         private String content;
         private LocalDateTime createdAt;
     }
