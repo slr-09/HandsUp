@@ -5,6 +5,7 @@ import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
+import com.back.handsUp.dto.fcmToken.FcmTokenDto;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserCharacterDto;
@@ -35,7 +36,7 @@ public class UserController {
         }
 
         try {
-           this.userService.signupUser(user);
+            this.userService.signupUser(user);
             return new BaseResponse<>("회원가입이 완료되었습니다.");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
@@ -171,6 +172,27 @@ public class UserController {
         try {
             this.userService.checkNickname(checkNickname);
             return new BaseResponse<>("사용할 수 있는 닉네임입니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("/update-fcmToken")
+    public BaseResponse<String> updateFcmToken(@RequestBody FcmTokenDto.updateToken fcmToken, Principal principal) {
+        try {
+            this.userService.updateFcmToken(principal, fcmToken);
+            return new BaseResponse<>("FCM 토큰 비교에 성공하였습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @PostMapping("/delete-fcmToken")
+    public BaseResponse<String> deleteFcmToken(Principal principal) {
+        try {
+            this.userService.deleteFcmToken(principal);
+            return new BaseResponse<>("FCM 토큰을 삭제하였습니다.");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }

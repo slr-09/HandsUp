@@ -54,8 +54,8 @@ public class InquiryReportController {
 
     //문의 조회(관리자용)
     @GetMapping("/inquiry")
-    public BaseResponse<List<InquiryDto.PostInquiryInfo>> getInquiry(Principal principal){
-        try{
+    public BaseResponse<List<InquiryDto.PostInquiryInfo>> getInquiry(Principal principal) {
+        try {
             List<InquiryDto.PostInquiryInfo> getInquiry = this.inquiryReportService.getInquiry(principal);
             return new BaseResponse<>(getInquiry);
         } catch (BaseException e) {
@@ -65,10 +65,20 @@ public class InquiryReportController {
 
     //신고 조회(관리자용)
     @GetMapping("/report")
-    public BaseResponse<List<ReportDto.GetReport>> getReport(Principal principal){
-        try{
+    public BaseResponse<List<ReportDto.GetReport>> getReport(Principal principal) {
+        try {
             List<ReportDto.GetReport> getReport = this.inquiryReportService.getReport(principal);
             return new BaseResponse<>(getReport);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @GetMapping("/report/notSolved")
+    public BaseResponse<List<ReportDto.GetAllReport>> getAllReport(Principal principal) {
+        try {
+            List<ReportDto.GetAllReport> getNotSolvedReports = this.inquiryReportService.getNotSolvedReport(principal);
+            return new BaseResponse<>(getNotSolvedReports);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }

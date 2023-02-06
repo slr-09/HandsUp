@@ -5,21 +5,25 @@ import static com.back.handsUp.baseResponse.BaseResponseStatus.*;
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.Board;
+import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.jwt.RefreshToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardPreviewRes;
+import com.back.handsUp.dto.fcmToken.FcmTokenDto;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserCharacterDto;
 import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.repository.board.BoardRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
+import com.back.handsUp.repository.fcm.FcmTokenRepository;
 import com.back.handsUp.repository.user.CharacterRepository;
 import com.back.handsUp.repository.user.SchoolRepository;
 import com.back.handsUp.repository.user.UserRepository;
 import com.back.handsUp.repository.user.jwt.RefreshTokenRepository;
+import com.back.handsUp.utils.FirebaseCloudMessageService;
 import com.back.handsUp.utils.Role;
 import com.back.handsUp.utils.TokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -53,11 +57,13 @@ public class UserService {
     private final BoardUserRepository boardUserRepository;
 
     private final BoardService boardService;
-
+    private final FcmTokenRepository fcmTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    private final FirebaseCloudMessageService firebaseCloudMessageService;
 
 
     public void signupUser(UserDto.ReqSignUp user) throws BaseException {
@@ -115,11 +121,12 @@ public class UserService {
         }else{
             User userEntity = optional.get();
             if(passwordEncoder.matches(user.getPassword(), userEntity.getPassword())) { // 그냥 받아온 password를 넣으면 알아서 암호화해서 비교함.
+                // todo : front firebase 구현 시 주석 해제
+//                firebaseCloudMessageService.overWriteToken(user.getFcmToken(), userEntity);  //FCM token 저장.
                 return token(user);
             }else{
                 throw new BaseException(BaseResponseStatus.INVALID_PASSWORD);
             }
-
         }
     }
 
@@ -135,7 +142,8 @@ public class UserService {
         RefreshToken token = optional1.get();
 
         token.setValue("");
-
+        // todo : front firebase 구현 시 주석 해제
+//        firebaseCloudMessageService.deleteToken(userEntity);
     }
 
     //캐릭터 수정
@@ -256,8 +264,7 @@ public class UserService {
 
         //not null 값이 null로 들어온 경우
         if(characterInfo.getEye().isBlank() || characterInfo.getEyeBrow().isBlank() || characterInfo.getHair().isBlank() ||
-        characterInfo.getNose().isBlank() || characterInfo.getMouth().isBlank()|| characterInfo.getHairColor().isBlank() ||
-                characterInfo.getSkinColor().isBlank() || characterInfo.getBackGroundColor().isBlank()){
+        characterInfo.getNose().isBlank() || characterInfo.getMouth().isBlank()|| characterInfo.getBackGroundColor().isBlank()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_CHARACTER_VALUE);
         }
 
@@ -388,5 +395,25 @@ public class UserService {
         if(!optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.EXIST_NICKNAME);
         }
+    }
+
+    public void updateFcmToken(Principal principal, FcmTokenDto.updateToken fcmToken) throws BaseException {
+        Optional<User> optional = userRepository.findByEmail(principal.getName());
+        if(optional.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+        User user = optional.get();
+
+        firebaseCloudMessageService.overWriteToken(fcmToken.getFcmToken(), user);
+    }
+
+    public void deleteFcmToken(Principal principal) throws BaseException {
+        Optional<User> optional = userRepository.findByEmail(principal.getName());
+        if(optional.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
+        }
+        User user = optional.get();
+
+        firebaseCloudMessageService.deleteToken(user);
     }
 }

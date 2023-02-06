@@ -47,4 +47,17 @@ public class ReportDto {
         private Long reportedUserIdx;  //신고당한 유저
     }
 
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class GetAllReport {
+        private long userIdx;
+        private String userNickname;
+        private String content;
+        private long reportedUserIdx;
+        private String reportedUserNickname;
+        private long reportedBoardIdx;
+        private String reportedBoardContents;
+    }
+
 }

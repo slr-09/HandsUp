@@ -4,6 +4,7 @@ import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.*;
 import com.back.handsUp.domain.chat.ChatRoom;
+import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardDto;
@@ -14,6 +15,7 @@ import com.back.handsUp.repository.board.BoardTagRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.board.TagRepository;
 import com.back.handsUp.repository.chat.ChatRoomRepository;
+import com.back.handsUp.repository.fcm.FcmTokenRepository;
 import com.back.handsUp.repository.user.UserRepository;
 import com.back.handsUp.utils.FirebaseCloudMessageService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,7 @@ public class BoardService {
     private final BoardUserRepository boardUserRepository;
     private final FirebaseCloudMessageService firebaseCloudMessageService;
     private final ChatRoomRepository chatRoomRepository;
+    private final FcmTokenRepository fcmTokenRepository;
 
 
     //단일 게시물 조회
@@ -59,15 +62,6 @@ public class BoardService {
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDIDX);
         }
         Board board = optionalBoard.get();
-
-
-        String locationInfo;
-        //위치 정보 동의하면 locationInfo 에 위치 담기
-        if (Objects.equals(board.getIndicateLocation(), "Y")) {
-            locationInfo = board.getLocation();
-        } else {
-            locationInfo = "위치 비밀";
-        }
 
         //like 확인
         Optional<BoardUser> optionalBoardUserEntity = boardUserRepository.findBoardUserByBoardIdxAndUserIdx(board, user);
@@ -104,7 +98,8 @@ public class BoardService {
                 .tag(tag.getName())
                 .nickname(boardUser.getNickname())
                 .messageDuration(board.getMessageDuration())
-                .location(locationInfo)
+                .latitude(board.getLatitude())
+                .longitude(board.getLongitude())
                 .didLike(didLike)
                 .createdAt(board.getCreatedAt()).build();
     }
@@ -153,7 +148,8 @@ public class BoardService {
             BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
                     .boardIdx(b.getBoardIdx())
                     .character(characterInfo)
-                    .location(b.getLocation())
+                    .latitude(b.getLatitude())
+                    .longitude(b.getLongitude())
                     .createdAt(b.getCreatedAt())
                     .build();
 
@@ -254,8 +250,18 @@ public class BoardService {
 
 //Todo : User FcmToken 추가 후 주석 해제.
 //      하트 알림 전송 부분.
+//
+//        Optional<FcmToken> optionalFcmToken = fcmTokenRepository.findFcmTokenByUser(boardUser);
+//        if (optionalFcmToken.isEmpty()) {
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_FCMTOKEN);
+//        }
+//        FcmToken fcmToken = optionalFcmToken.get();
 //        if (!Objects.equals(user.getUserIdx(), boardUser.getUserIdx())) {
-//                firebaseCloudMessageService.sendMessageTo(boardUser.getFcmToken(), "Hands Up", "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
+//            try {
+//                firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), boardUser.getNickname(), "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
+//            } catch (Exception e) {
+//                throw new BaseException(BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR);
+//            }
 //        }
 
 
@@ -290,18 +296,13 @@ public class BoardService {
 
     public void addBoard(Principal principal, BoardDto.GetBoardInfo boardInfo) throws BaseException {
 
-        if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLocation() == null){
-            throw new BaseException(BaseResponseStatus.LOCATION_ERROR);
-        }
-
-        if(boardInfo.getMessageDuration()<1 || boardInfo.getMessageDuration()>48){
-            throw new BaseException(BaseResponseStatus.MESSAGEDURATION_ERROR);
-        }
+        checkLocationError(boardInfo);
 
         Board boardEntity = Board.builder()
                 .content(boardInfo.getContent())
                 .indicateLocation(boardInfo.getIndicateLocation())
-                .location(boardInfo.getLocation())
+                .latitude(boardInfo.getLatitude())
+                .longitude(boardInfo.getLongitude())
                 .messageDuration(boardInfo.getMessageDuration())
                 .build();
         try{
@@ -368,13 +369,7 @@ public class BoardService {
     }
 
     public void patchBoard(Principal principal, Long boardIdx, BoardDto.GetBoardInfo boardInfo) throws BaseException{
-        if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLocation() == null){
-            throw new BaseException(BaseResponseStatus.LOCATION_ERROR);
-        }
-
-        if(boardInfo.getMessageDuration()<1 || boardInfo.getMessageDuration()>48){
-            throw new BaseException(BaseResponseStatus.MESSAGEDURATION_ERROR);
-        }
+        checkLocationError(boardInfo);
 
         Optional<Board> optional = this.boardRepository.findByBoardIdx(boardIdx);
         if(optional.isEmpty()){
@@ -394,7 +389,7 @@ public class BoardService {
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
         }
 
-        boardEntity.changeBoard(boardInfo.getContent(), boardInfo.getLocation(), boardInfo.getIndicateLocation(), boardInfo.getMessageDuration());
+        boardEntity.changeBoard(boardInfo.getContent(), boardInfo.getLatitude(), boardInfo.getLongitude(), boardInfo.getIndicateLocation(), boardInfo.getMessageDuration());
         try{
             this.boardRepository.save(boardEntity);
         } catch (Exception e) {
@@ -412,11 +407,18 @@ public class BoardService {
         }
     }
 
+    private void checkLocationError(BoardDto.GetBoardInfo boardInfo) throws BaseException {
+        if(boardInfo.getIndicateLocation().equals("true") && boardInfo.getLatitude() == 0.0 && boardInfo.getLongitude() == 0.0){
+            throw new BaseException(BaseResponseStatus.LOCATION_ERROR);
+        }
+
+        if(boardInfo.getMessageDuration()<1 || boardInfo.getMessageDuration()>48){
+            throw new BaseException(BaseResponseStatus.MESSAGEDURATION_ERROR);
+        }
+    }
+
     public String blockBoard(Principal principal, Long boardIdx) throws BaseException {
         String successResult = "게시물을 차단하였습니다.";
-        String failResult = "게시물 차단에 실패하였습니다.";
-        String selfBlockResult = "본인 게시물을 차단하지 못합니다.";
-        String BlockedResult = "이미 차단된 게시물입니다.";
 
         Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
         if (optionalUser.isEmpty()) {
@@ -435,6 +437,7 @@ public class BoardService {
         Optional<BoardUser> optionalBoardUser = boardUserRepository.findBoardUserByBoardIdxAndUserIdx(board, user);
 
         BoardUser boardUser;
+
 
         //BoardUser 객체가 없을 때
         if (optionalBoardUser.isEmpty()) {
@@ -460,10 +463,10 @@ public class BoardService {
                 throw new BaseException(DATABASE_INSERT_ERROR);
             }
         } else if (Objects.equals(optionalBoardUser.get().getStatus(), "WRITE")) { //본인이 작성자일 때
-            return selfBlockResult;
+            throw new BaseException(BaseResponseStatus.SELF_BLOCK_ERROR);
         } else if (Objects.equals(optionalBoardUser.get().getStatus(), "BLOCK")) { //이미 차단한 게시물일 때
-            return BlockedResult;
-        } else return failResult; //알 수 없는 이유
+            throw new BaseException(BaseResponseStatus.BLOCKED_BOARD_ERROR);
+        } else throw new BaseException(DATABASE_INSERT_ERROR); //알 수 없는 이유
 
     }
 
@@ -488,7 +491,6 @@ public class BoardService {
                         .tagIdx(targetTag)
                         .build();
                 this.boardTagRepository.save(boardTagEntity);
-                log.info("new boardTag save done");
 
             } else{
                 BoardTag boardTagEntity = optional.get();
