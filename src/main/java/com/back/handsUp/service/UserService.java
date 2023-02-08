@@ -67,12 +67,6 @@ public class UserService {
 
 
     public void signupUser(UserDto.ReqSignUp user) throws BaseException {
-        //이메일 중복 확인
-        Optional<User> optional = this.userRepository.findByEmail(user.getEmail());
-        if(!optional.isEmpty() && optional.get().getStatus().equals("ACTIVE")){
-            throw new BaseException(BaseResponseStatus.EXIST_USER);
-        }
-
         String password = user.getPassword();
         try{
             String encodedPwd = passwordEncoder.encode(user.getPassword());
