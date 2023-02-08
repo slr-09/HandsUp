@@ -2,6 +2,8 @@ package com.back.handsUp.service;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.user.User;
+import com.back.handsUp.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,17 +11,12 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
-import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
+import java.util.Optional;
 import java.util.Random;
 
 @PropertySource("classpath:application.properties")
@@ -29,6 +26,7 @@ import java.util.Random;
 @Transactional
 public class MailService {
     private final JavaMailSender javaMailSender;
+    private final UserRepository userRepository;
     @Value("${spring.mail.username}")
     private String email;
 
@@ -70,6 +68,12 @@ public class MailService {
 
     //메일 발송
     public String sendMail(String email) throws BaseException {
+        //이메일 중복 확인
+        Optional<User> optional = this.userRepository.findByEmail(email);
+        if(!optional.isEmpty() && optional.get().getStatus().equals("ACTIVE")){
+            throw new BaseException(BaseResponseStatus.EXIST_USER);
+        }
+
         String code = createCode();
         try{
             MimeMessage mimeMessage = createMessage(code, email);
