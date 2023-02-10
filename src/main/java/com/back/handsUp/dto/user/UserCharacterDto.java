@@ -10,6 +10,8 @@ public class UserCharacterDto {
 
 	private String nickname;
 
+	private String schoolName;
+
 	private String eye;
 
 	private String eyeBrow;
