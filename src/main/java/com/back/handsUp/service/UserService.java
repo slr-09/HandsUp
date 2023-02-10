@@ -349,7 +349,7 @@ public class UserService {
     }
 
     //닉네임, 캐릭터 정보 조회
-    public UserCharacterDto getUserNicknameCharacter(Principal principal) throws BaseException {
+    public UserCharacterDto getUserInfo(Principal principal) throws BaseException {
         Optional<User> optional = userRepository.findByEmail(principal.getName());
         if(optional.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
@@ -360,6 +360,7 @@ public class UserService {
 
         UserCharacterDto userCharacterDto = UserCharacterDto.builder()
             .nickname(user.getNickname())
+            .schoolName(user.getSchoolIdx().getName())
             .eye(character.getEye())
             .eyeBrow(character.getEyeBrow())
             .glasses(character.getGlasses())

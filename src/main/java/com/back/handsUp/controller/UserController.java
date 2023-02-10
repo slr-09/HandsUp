@@ -156,9 +156,9 @@ public class UserController {
     }
 
     @GetMapping("")
-    public BaseResponse<UserCharacterDto> getNicknameAndCharacter(Principal principal){
+    public BaseResponse<UserCharacterDto> getUserInfo(Principal principal){
         try {
-            UserCharacterDto userCharacterDto = userService.getUserNicknameCharacter(principal);
+            UserCharacterDto userCharacterDto = userService.getUserInfo(principal);
             return new BaseResponse<>(userCharacterDto);
 
         } catch (BaseException e) {
