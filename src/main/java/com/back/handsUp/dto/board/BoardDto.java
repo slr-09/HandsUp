@@ -118,4 +118,9 @@ public class BoardDto {
             return 0;
         }
     }
+
+    @Getter
+    public static class School {
+        private String schoolName;
+    }
 }
