@@ -107,9 +107,7 @@ public class UserService {
     }
 
     public TokenDto logIn(UserDto.ReqLogIn user) throws BaseException{
-        //이메일 형식 확인
-
-        Optional<User> optional = this.userRepository.findByEmail(user.getEmail());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(user.getEmail(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }else{
