@@ -32,6 +32,7 @@ public enum BaseResponseStatus {
     NON_EXIST_CHATROOMIDX(false, 4017, "채팅방이 존재하지 않습니다."),
     ALREADY_DELETE_USER(false, 4017, "이미 탈퇴한 회원입니다."),
     NON_CORRESPOND_USER(false, 4018, "userIdx가 로그인한 유저와 일치하지 않습니다."),
+    NON_EXIST_SCHOOLNAME(false, 4019, "학교명이 존재하지 않습니다."),
     ALREADY_DELETE_BOARD(false, 4020, "이미 삭제된 게시물입니다."),
 
 
