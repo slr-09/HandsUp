@@ -4,7 +4,6 @@ import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.*;
 import com.back.handsUp.domain.chat.ChatRoom;
-import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
@@ -53,7 +52,7 @@ public class BoardService {
     public BoardDto.SingleBoardRes boardViewByIdx(Principal principal, Long boardIdx) throws BaseException {
 
         //조회하는 유저
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
@@ -184,7 +183,7 @@ public class BoardService {
     //게시물 조회 리스트,지도 중복 코드
     public List<BoardDto.BoardWithTag> getBoards(Principal principal, School school) throws BaseException {
         //조회하는 유저
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
@@ -244,7 +243,7 @@ public class BoardService {
         Board board = optionalBoard.get();
 
         //user : 하트 누르는 사용자.
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
@@ -292,7 +291,7 @@ public class BoardService {
     public BoardDto.MyBoard viewMyBoard(Principal principal) throws BaseException{
         //long myIdx = 1L; // = jwtService.getUserIdx(token);
         log.info("principal.getName() = {}",principal.getName());
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
@@ -334,7 +333,7 @@ public class BoardService {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
 
-        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
@@ -355,7 +354,7 @@ public class BoardService {
 
     //게시물 삭제
     public void deleteBoard(Principal principal, Long boardIdx) throws BaseException{
-        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
         }
@@ -400,7 +399,7 @@ public class BoardService {
         Board boardEntity = optional.get();
 
 
-        Optional<User> optional1 = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional1 = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional1.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
@@ -442,7 +441,7 @@ public class BoardService {
     public String blockBoard(Principal principal, Long boardIdx) throws BaseException {
         String successResult = "게시물을 차단하였습니다.";
 
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
         }
@@ -522,7 +521,7 @@ public class BoardService {
 
     //받은 하트 목록 조회
     public List<BoardDto.ReceivedLikeRes> receivedLikeList (Principal principal) throws BaseException {
-        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
         }
