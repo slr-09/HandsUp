@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import javax.validation.constraints.NotBlank;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,7 @@ public class InquiryReportService {
     private final BoardRepository boardRepository;
 
     public void inquiry(Principal principal, InquiryDto.PostInquiryInfo postInquiry) throws BaseException {
-        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
@@ -66,7 +65,7 @@ public class InquiryReportService {
 
         String successResult = "게시물을 성공적으로 신고하였습니다";
 
-        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
@@ -126,7 +125,7 @@ public class InquiryReportService {
 
         String successResult = "유저를 성공적으로 신고하였습니다";
 
-        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);

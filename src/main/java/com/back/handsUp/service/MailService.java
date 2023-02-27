@@ -69,8 +69,8 @@ public class MailService {
     //메일 발송
     public String sendMail(String email) throws BaseException {
         //이메일 중복 확인
-        Optional<User> optional = this.userRepository.findByEmail(email);
-        if(!optional.isEmpty() && optional.get().getStatus().equals("ACTIVE")){
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(email, "ACTIVE");
+        if(!optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.EXIST_USER);
         }
 
