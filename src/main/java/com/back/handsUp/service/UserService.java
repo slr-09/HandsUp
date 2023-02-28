@@ -122,7 +122,7 @@ public class UserService {
             User userEntity = optional.get();
             if(passwordEncoder.matches(user.getPassword(), userEntity.getPassword())) { // 그냥 받아온 password를 넣으면 알아서 암호화해서 비교함.
                 // todo : front firebase 구현 시 주석 해제
-//                firebaseCloudMessageService.overWriteToken(user.getFcmToken(), userEntity);  //FCM token 저장.
+                firebaseCloudMessageService.overWriteToken(user.getFcmToken(), userEntity);  //FCM token 저장.
                 return token(user);
             }else{
                 throw new BaseException(BaseResponseStatus.INVALID_PASSWORD);
@@ -143,7 +143,7 @@ public class UserService {
 
         token.setValue("");
         // todo : front firebase 구현 시 주석 해제
-//        firebaseCloudMessageService.deleteToken(userEntity);
+        firebaseCloudMessageService.deleteToken(userEntity);
     }
 
     //캐릭터 수정
