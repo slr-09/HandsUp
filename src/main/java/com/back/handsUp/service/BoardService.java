@@ -4,6 +4,7 @@ import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.*;
 import com.back.handsUp.domain.chat.ChatRoom;
+import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
