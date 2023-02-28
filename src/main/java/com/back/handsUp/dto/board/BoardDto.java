@@ -62,6 +62,7 @@ public class BoardDto {
     @Getter
     public static class BoardWithTag {
         private Board board;
+        private CharacterDto.GetCharacterInfo character;
         private String tag;
     }
 
