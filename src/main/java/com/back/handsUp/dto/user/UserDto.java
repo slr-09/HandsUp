@@ -41,7 +41,7 @@ public class UserDto {
         private String password;
 
 //        todo : fcmToken frontEnd 구현시 주석 해제
-//        private String fcmToken;
+        private String fcmToken;
 
     }
 

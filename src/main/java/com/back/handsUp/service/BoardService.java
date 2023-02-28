@@ -272,18 +272,18 @@ public class BoardService {
 //Todo : User FcmToken 추가 후 주석 해제.
 //      하트 알림 전송 부분.
 //
-//        Optional<FcmToken> optionalFcmToken = fcmTokenRepository.findFcmTokenByUser(boardUser);
-//        if (optionalFcmToken.isEmpty()) {
-//            throw new BaseException(BaseResponseStatus.NON_EXIST_FCMTOKEN);
-//        }
-//        FcmToken fcmToken = optionalFcmToken.get();
-//        if (!Objects.equals(user.getUserIdx(), boardUser.getUserIdx())) {
-//            try {
-//                firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), boardUser.getNickname(), "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
-//            } catch (Exception e) {
-//                throw new BaseException(BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR);
-//            }
-//        }
+        Optional<FcmToken> optionalFcmToken = fcmTokenRepository.findFcmTokenByUser(boardUser);
+        if (optionalFcmToken.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_FCMTOKEN);
+        }
+        FcmToken fcmToken = optionalFcmToken.get();
+        if (!Objects.equals(user.getUserIdx(), boardUser.getUserIdx())) {
+            try {
+                firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), boardUser.getNickname(), "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
+            } catch (Exception e) {
+                throw new BaseException(BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR);
+            }
+        }
 
 
     }

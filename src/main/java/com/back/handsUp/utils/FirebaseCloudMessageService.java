@@ -25,7 +25,7 @@ public class FirebaseCloudMessageService {
 
     private final FcmTokenRepository fcmTokenRepository;
 
-    private final String API_URL = "https://fcm.googleapis.com/v1/projects/handsup-c4213/messages:send";
+    private final String API_URL = "https://fcm.googleapis.com/v1/projects/handsup-9c9e7/messages:send";
 
     private final ObjectMapper objectMapper;
 
