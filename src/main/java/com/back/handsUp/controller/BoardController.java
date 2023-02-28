@@ -38,9 +38,9 @@ public class BoardController {
     //전체 게시물 조회
     @ResponseBody
     @GetMapping("/showList")
-    public BaseResponse<BoardDto.GetBoardList> showBoardList(Principal principal){
+    public BaseResponse<BoardDto.GetBoardList> showBoardList(Principal principal, @RequestBody BoardDto.School school){
         try {
-            BoardDto.GetBoardList getBoards = boardService.showBoardList(principal);
+            BoardDto.GetBoardList getBoards = boardService.showBoardList(principal, school.getSchoolName());
             return new BaseResponse<>(getBoards);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
@@ -50,9 +50,9 @@ public class BoardController {
     //전체 게시물(지도 상) 조회
     @ResponseBody
     @GetMapping("/showMapList")
-    public BaseResponse<BoardDto.GetBoardMapAndSchool> showBoardMapList(Principal principal){
+    public BaseResponse<BoardDto.GetBoardMapAndSchool> showBoardMapList(Principal principal, @RequestBody BoardDto.School school){
         try {
-            BoardDto.GetBoardMapAndSchool getBoardsMap = boardService.showBoardMapList(principal);
+            BoardDto.GetBoardMapAndSchool getBoardsMap = boardService.showBoardMapList(principal, school.getSchoolName());
             return new BaseResponse<>(getBoardsMap);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));

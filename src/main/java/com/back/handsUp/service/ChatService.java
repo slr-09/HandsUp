@@ -33,7 +33,7 @@ public class ChatService {
     private final BoardService boardService;
     //채팅방 조회
     public ChatDto.ResChat getChatInfo(Principal principal, Long chatRoomIdx) throws BaseException {
-        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }

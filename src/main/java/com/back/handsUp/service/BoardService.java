@@ -4,8 +4,8 @@ import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.*;
 import com.back.handsUp.domain.chat.ChatRoom;
-import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.user.Character;
+import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardDto;
 import com.back.handsUp.dto.board.BoardPreviewRes;
@@ -16,6 +16,7 @@ import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.board.TagRepository;
 import com.back.handsUp.repository.chat.ChatRoomRepository;
 import com.back.handsUp.repository.fcm.FcmTokenRepository;
+import com.back.handsUp.repository.user.SchoolRepository;
 import com.back.handsUp.repository.user.UserRepository;
 import com.back.handsUp.utils.FirebaseCloudMessageService;
 import lombok.RequiredArgsConstructor;
@@ -44,12 +45,14 @@ public class BoardService {
     private final ChatRoomRepository chatRoomRepository;
     private final FcmTokenRepository fcmTokenRepository;
 
+    private final SchoolRepository schoolRepository;
+
 
     //단일 게시물 조회
     public BoardDto.SingleBoardRes boardViewByIdx(Principal principal, Long boardIdx) throws BaseException {
 
         //조회하는 유저
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
@@ -105,19 +108,18 @@ public class BoardService {
     }
 
     //전체 게시물 조회
-    public BoardDto.GetBoardList showBoardList(Principal principal) throws BaseException {
+    public BoardDto.GetBoardList showBoardList(Principal principal, String schoolName) throws BaseException {
 
-        List<BoardDto.BoardWithTag> getBoards = getBoards(principal);
-
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
-
-        if (optionalUser.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
+        if(optionalSchool.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
         }
-        User user = optionalUser.get();
+        School school = optionalSchool.get();
+
+        List<BoardDto.BoardWithTag> getBoards = getBoards(principal, school);
 
         BoardDto.GetBoardList getBoardList = BoardDto.GetBoardList.builder()
-                .schoolName(user.getSchoolIdx().getName())
+                .schoolName(schoolName)
                 .getBoardList(getBoards)
                 .build();
 
@@ -127,15 +129,22 @@ public class BoardService {
 
     // 전체 게시물(지도 상) 조회
     // 캐릭터, 위치(Board), boardIdx
-    public BoardDto.GetBoardMapAndSchool showBoardMapList(Principal principal) throws BaseException {
+    public BoardDto.GetBoardMapAndSchool showBoardMapList(Principal principal, String schoolName) throws BaseException {
 
-        List<BoardDto.BoardWithTag> getBoards = getBoards(principal);
+        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
+        
+        if(optionalSchool.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
+        }
+        School school = optionalSchool.get();
+
+        List<BoardDto.BoardWithTag> getBoards = getBoards(principal, school);
 
         List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
 
         for(BoardDto.BoardWithTag b : getBoards) {
             Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(b.getBoard(), "WRITE").stream().findFirst();
-            if(optional.isEmpty()){
+            if (optional.isEmpty()) {
                 throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
             }
             BoardUser boardUser = optional.get();
@@ -163,15 +172,8 @@ public class BoardService {
             getBoardsMapList.add(getBoardMap);
         }
 
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
-
-        if (optionalUser.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
-        }
-        User user = optionalUser.get();
-
         BoardDto.GetBoardMapAndSchool getBoardMapAndSchool = BoardDto.GetBoardMapAndSchool.builder()
-                .schoolName(user.getSchoolIdx().getName())
+                .schoolName(schoolName)
                 .getBoardMap(getBoardsMapList)
                 .build();
 
@@ -179,16 +181,16 @@ public class BoardService {
     }
 
     //게시물 조회 리스트,지도 중복 코드
-    public List<BoardDto.BoardWithTag> getBoards(Principal principal) throws BaseException {
+    public List<BoardDto.BoardWithTag> getBoards(Principal principal, School school) throws BaseException {
         //조회하는 유저
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
         User user = optionalUser.get();
 
-        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(user.getSchoolIdx(), "ACTIVE");
+        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(school, "ACTIVE");
 
         List<BoardDto.BoardWithTag> getBoards = new ArrayList<>();
         List<Board> blockedBoard = new ArrayList<>();
@@ -241,7 +243,7 @@ public class BoardService {
         Board board = optionalBoard.get();
 
         //user : 하트 누르는 사용자.
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
@@ -289,7 +291,7 @@ public class BoardService {
     public BoardDto.MyBoard viewMyBoard(Principal principal) throws BaseException{
         //long myIdx = 1L; // = jwtService.getUserIdx(token);
         log.info("principal.getName() = {}",principal.getName());
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
@@ -331,7 +333,7 @@ public class BoardService {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
 
-        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
@@ -352,7 +354,7 @@ public class BoardService {
 
     //게시물 삭제
     public void deleteBoard(Principal principal, Long boardIdx) throws BaseException{
-        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
         }
@@ -397,7 +399,7 @@ public class BoardService {
         Board boardEntity = optional.get();
 
 
-        Optional<User> optional1 = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional1 = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional1.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
@@ -439,7 +441,7 @@ public class BoardService {
     public String blockBoard(Principal principal, Long boardIdx) throws BaseException {
         String successResult = "게시물을 차단하였습니다.";
 
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
         }
@@ -519,7 +521,7 @@ public class BoardService {
 
     //받은 하트 목록 조회
     public List<BoardDto.ReceivedLikeRes> receivedLikeList (Principal principal) throws BaseException {
-        Optional<User> optional = this.userRepository.findByEmail(principal.getName());
+        Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
         }
