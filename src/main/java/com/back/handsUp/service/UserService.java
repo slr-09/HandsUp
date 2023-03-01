@@ -36,6 +36,7 @@ import javax.transaction.Transactional;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -94,6 +95,7 @@ public class UserService {
                 .character(character)
                 .schoolIdx(school)
                 .role(Role.ROLE_USER)
+                .nicknameUpdatedAt(LocalDate.of(0000,1,1))
                 .build();
         user.setPassword(password);
 
@@ -169,11 +171,20 @@ public class UserService {
         User findUser = optional.get();
 
         //닉네임 변경주기 확인
-        Date lastUpdate = findUser.getNicknameUpdatedAt();
-        ZoneId defaultZoneId = ZoneId.systemDefault();
-        Date today = Date.from(LocalDate.now().atStartOfDay(defaultZoneId).toInstant());
-        long differenceInMillis = today.getTime() - lastUpdate.getTime();
-        long days = (differenceInMillis / (24 * 60 * 60 * 1000L)) % 365;
+        // Date lastUpdate = findUser.getNicknameUpdatedAt();
+        // long days = 0;
+        // ZoneId defaultZoneId = ZoneId.systemDefault();
+        // Date today = Date.from(LocalDate.now().atStartOfDay(defaultZoneId).toInstant());
+        // long differenceInMillis = today.getTime() - lastUpdate.getTime();
+        // if(lastUpdate == null){
+        //     days=7;
+        // }
+        // else{
+        //     days = (differenceInMillis / (24 * 60 * 60 * 1000L)) % 365;
+        // }
+        LocalDate lastUpdate = findUser.getNicknameUpdatedAt();
+        long days = ChronoUnit.DAYS.between(lastUpdate, LocalDate.now());
+
         if (days < 7) {
             throw new BaseException(LIMIT_NICKNAME_CHANGE);
         }
@@ -187,7 +198,7 @@ public class UserService {
 
         try {
             findUser.setNickname(nickname);
-            findUser.setNicknameUpdatedAt(today);
+            findUser.setNicknameUpdatedAt(LocalDate.now());
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }

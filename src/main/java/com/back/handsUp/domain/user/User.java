@@ -11,6 +11,8 @@ import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,8 +37,8 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 15)
     private String nickname;
 
-    @Column(columnDefinition="date default (current_date)")
-    private Date nicknameUpdatedAt;
+    @Column
+    private LocalDate nicknameUpdatedAt;
 
     //채팅방 내 게시물 조회를 위해 fetch = eager
     @OneToOne(fetch = FetchType.EAGER)
@@ -56,7 +58,7 @@ public class User extends BaseEntity {
 
 
     @Builder
-    public User(String email, String password, String nickname, Date nicknameUpdatedAt, Character character, School schoolIdx, String status, Role role) {
+    public User(String email, String password, String nickname, LocalDate nicknameUpdatedAt, Character character, School schoolIdx, String status, Role role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
