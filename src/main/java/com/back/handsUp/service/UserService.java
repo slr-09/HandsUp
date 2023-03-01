@@ -169,19 +169,6 @@ public class UserService {
         }
 
         User findUser = optional.get();
-
-        //닉네임 변경주기 확인
-        // Date lastUpdate = findUser.getNicknameUpdatedAt();
-        // long days = 0;
-        // ZoneId defaultZoneId = ZoneId.systemDefault();
-        // Date today = Date.from(LocalDate.now().atStartOfDay(defaultZoneId).toInstant());
-        // long differenceInMillis = today.getTime() - lastUpdate.getTime();
-        // if(lastUpdate == null){
-        //     days=7;
-        // }
-        // else{
-        //     days = (differenceInMillis / (24 * 60 * 60 * 1000L)) % 365;
-        // }
         LocalDate lastUpdate = findUser.getNicknameUpdatedAt();
         long days = ChronoUnit.DAYS.between(lastUpdate, LocalDate.now());
 
