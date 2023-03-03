@@ -144,16 +144,6 @@ public class BoardService {
         List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
 
         for(BoardDto.BoardWithTag b : getBoards) {
-            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(b.getBoard(), "WRITE").stream().findFirst();
-            if (optional.isEmpty()) {
-                throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
-            }
-            BoardUser boardUser = optional.get();
-
-            Character character = boardUser.getUserIdx().getCharacter();
-            CharacterDto.GetCharacterInfo characterInfo = new CharacterDto.GetCharacterInfo(character.getEye(),
-                    character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
-                    character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
 
             Optional<String> opTagName = this.boardTagRepository.findTagNameByBoard(b.getBoard());
             String tagName;
@@ -163,7 +153,7 @@ public class BoardService {
 
             BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
                     .boardIdx(b.getBoard().getBoardIdx())
-                    .character(characterInfo)
+                    .character(b.getCharacter())
                     .latitude(b.getBoard().getLatitude())
                     .longitude(b.getBoard().getLongitude())
                     .createdAt(b.getBoard().getCreatedAt())
@@ -206,6 +196,19 @@ public class BoardService {
             if(timeCheck.getSeconds() > b.getBoardIdx().getMessageDuration() * 3600L) {
                 b.getBoardIdx().changeStatus("EXPIRED");
             }
+
+            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(b.getBoardIdx(), "WRITE").stream().findFirst();
+            if (optional.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+            }
+            BoardUser boardUser = optional.get();
+
+            Character character = boardUser.getUserIdx().getCharacter();
+            CharacterDto.GetCharacterInfo characterInfo = new CharacterDto.GetCharacterInfo(character.getEye(),
+                    character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
+                    character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
+
+
             //차단 체크
             if(b.getUserIdx()==user && b.getStatus().equals("BLOCK")){
                 blockedBoard.add(b.getBoardIdx());
@@ -219,8 +222,11 @@ public class BoardService {
                     if (opTagName.isEmpty()) {
                         tagName = null;
                     }else tagName = opTagName.get();
+
+
                     BoardDto.BoardWithTag boardWithTag = BoardDto.BoardWithTag.builder()
                             .board(shownBoard)
+                            .character(characterInfo)
                             .tag(tagName).build();
 
                     getBoards.add(boardWithTag);
