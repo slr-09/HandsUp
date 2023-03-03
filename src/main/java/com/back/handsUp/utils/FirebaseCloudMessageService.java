@@ -68,7 +68,7 @@ public class FirebaseCloudMessageService {
         return objectMapper.writeValueAsString(fcmMessage);
     }
     private String getAccessToken() throws IOException {
-        String firebaseConfigPath = "firebase/firebase_service_key";
+        String firebaseConfigPath = "firebase/handsup-9c9e7-firebase-adminsdk-ow0l5-6bb4cd6c8c.json";
 
         GoogleCredentials googleCredentials = GoogleCredentials.fromStream(new ClassPathResource(firebaseConfigPath)
                 .getInputStream())

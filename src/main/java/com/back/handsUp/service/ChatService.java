@@ -7,12 +7,16 @@ import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.domain.board.BoardUser;
 import com.back.handsUp.domain.chat.ChatRoom;
+import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.chat.ChatDto;
+import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.chat.ChatRoomRepository;
+import com.back.handsUp.repository.fcm.FcmTokenRepository;
 import com.back.handsUp.repository.user.UserRepository;
+import com.back.handsUp.utils.FirebaseCloudMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +35,8 @@ public class ChatService {
     private final UserRepository userRepository;
     private final BoardUserRepository boardUserRepository;
     private final BoardService boardService;
+    private final FcmTokenRepository fcmTokenRepository;
+    private final FirebaseCloudMessageService firebaseCloudMessageService;
     //채팅방 조회
     public ChatDto.ResChat getChatInfo(Principal principal, Long chatRoomIdx) throws BaseException {
         Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
@@ -80,5 +86,56 @@ public class ChatService {
         Board board = chatRoom.getBoardIdx();
         result += boardService.blockBoard(principal, board.getBoardIdx());
         return result;
+    }
+
+    public String chatAlarm(Principal principal, UserDto.ResEmail email) throws BaseException {
+
+        System.out.println("--------------------------------");
+        System.out.println("--------------------------------");
+        System.out.println(email.getEmail());
+        System.out.println("--------------------------------");
+        System.out.println("--------------------------------");
+
+        Optional<User> optionalMe = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
+
+        if (optionalMe.isEmpty()) {
+            System.out.println("--------------------------------");
+            System.out.println("--------------------------------");
+            System.out.println("내 이메일 검색");
+            System.out.println("--------------------------------");
+            System.out.println("--------------------------------");
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User me = optionalMe.get();
+
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(email.getEmail(), "ACTIVE");
+
+        if (optionalUser.isEmpty()) {
+            System.out.println("--------------------------------");
+            System.out.println("--------------------------------");
+            System.out.println("니 이메일 검색");
+            System.out.println("--------------------------------");
+            System.out.println("--------------------------------");
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
+        }
+        User you = optionalUser.get();
+        Optional<FcmToken> optionalFcmToken = fcmTokenRepository.findFcmTokenByUser(you);
+        if (optionalFcmToken.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_FCMTOKEN);
+        }
+        FcmToken fcmToken = optionalFcmToken.get();
+
+        try {
+            firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), me.getNickname(), "채팅이 도착하였습니다.");
+            return "채팅 알림을 성공적으로 보냈습니다.";
+        } catch (Exception e) {
+            System.out.println("-----------------");
+            System.out.println("-----------------");
+            System.out.println("SEND ERROR");
+            System.out.println(e.getMessage());
+            System.out.println("-----------------");
+            System.out.println("-----------------");
+            throw new BaseException(BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR);
+        }
     }
 }
