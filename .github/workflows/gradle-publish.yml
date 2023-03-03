@@ -51,6 +51,11 @@ jobs:
       - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
       - run: cat ./src/main/resources/application.properties
       
+      - uses: actions/checkout@v3
+      - run: touch ./src/main/resources/firebase/handsup-9c9e7-firebase-adminsdk-ow0l5-6bb4cd6c8c.json
+      - run: echo "${{ secrets.FIREBASE_SECRET_KEY }}" > ./src/main/resources/firebase/handsup-9c9e7-firebase-adminsdk-ow0l5-6bb4cd6c8c.json
+      - run: cat ./src/main/resources/firebase/handsup-9c9e7-firebase-adminsdk-ow0l5-6bb4cd6c8c.json
+      
       # (3) Gradle build (Test 제외)
       - name: Build with Gradle
         uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
