@@ -46,15 +46,16 @@ jobs:
 #          OCCUPY_SECRET_DIR_FILE_NAME: jasypt-encryptor-password.txt
 #        run: echo $OCCUPY_SECRET | base64 -di > $OCCUPY_SECRET_DIR/$OCCUPY_SECRET_DIR_FILE_NAME
 
-      - uses: actions/checkout@v3
-      - run: touch ./src/main/resources/application.properties
-      - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
-      - run: cat ./src/main/resources/application.properties
       
       - uses: actions/checkout@v3
       - run: touch ./src/main/resources/firebase/handsup-9c9e7-firebase-adminsdk-ow0l5-6bb4cd6c8c.json
       - run: echo "${{ secrets.FIREBASE_SECRET_KEY }}" > ./src/main/resources/firebase/handsup-9c9e7-firebase-adminsdk-ow0l5-6bb4cd6c8c.json
       - run: cat ./src/main/resources/firebase/handsup-9c9e7-firebase-adminsdk-ow0l5-6bb4cd6c8c.json
+      
+      - uses: actions/checkout@v3
+      - run: touch ./src/main/resources/application.properties
+      - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
+      - run: cat ./src/main/resources/application.properties
       
       # (3) Gradle build (Test 제외)
       - name: Build with Gradle
