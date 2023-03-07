@@ -153,6 +153,7 @@ public class BoardService {
 
             BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
                     .boardIdx(b.getBoard().getBoardIdx())
+                    .nickname(b.getNickname())
                     .character(b.getCharacter())
                     .latitude(b.getBoard().getLatitude())
                     .longitude(b.getBoard().getLongitude())
@@ -226,6 +227,7 @@ public class BoardService {
 
                     BoardDto.BoardWithTag boardWithTag = BoardDto.BoardWithTag.builder()
                             .board(shownBoard)
+                            .nickname(boardUser.getUserIdx().getNickname())
                             .character(characterInfo)
                             .tag(tagName).build();
 

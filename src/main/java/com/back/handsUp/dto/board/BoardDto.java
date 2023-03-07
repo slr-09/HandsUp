@@ -35,6 +35,7 @@ public class BoardDto {
     @NoArgsConstructor
     public static class GetBoardMap {
         private Long boardIdx;
+        private String nickname;
         private CharacterDto.GetCharacterInfo character;
         private double latitude;
         private double longitude;
@@ -62,6 +63,7 @@ public class BoardDto {
     @Getter
     public static class BoardWithTag {
         private Board board;
+        private String nickname;
         private CharacterDto.GetCharacterInfo character;
         private String tag;
     }
