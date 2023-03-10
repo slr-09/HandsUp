@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -57,4 +58,29 @@ public class ChatController {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @PostMapping("/create")
+    public BaseResponse<String> createChat(Principal principal, @RequestBody ChatDto.ReqCreateChat reqCreateChat) {
+
+        try {
+            String result = chatService.createChat(principal, reqCreateChat);
+
+            return new BaseResponse<>(result);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @GetMapping("/list")
+    public BaseResponse<List<ChatDto.ResChatList>> viewChatList(Principal principal) {
+
+        try {
+            List<ChatDto.ResChatList> result = chatService.viewAllList(principal);
+
+            return new BaseResponse<>(result);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
 }

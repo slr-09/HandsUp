@@ -549,7 +549,7 @@ public class BoardService {
                     character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
                     character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
 
-            Optional<ChatRoom> chatRoomOptional = this.chatRoomRepository.findChatRoomByBoardIdxAndUserIdx(boardUser.getBoardIdx(), boardUser.getUserIdx());
+            Optional<ChatRoom> chatRoomOptional = this.chatRoomRepository.findChatRoomByBoardIdxAndSubUserIdx(boardUser.getBoardIdx(), boardUser.getUserIdx());
             if(chatRoomOptional.isEmpty()){
                 throw new BaseException(BaseResponseStatus.NON_EXIST_CHATROOMIDX);
             }
