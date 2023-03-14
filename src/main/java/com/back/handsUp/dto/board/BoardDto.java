@@ -106,6 +106,7 @@ public class BoardDto {
     @Builder
     public static class ReceivedLikeRes implements Comparable<ReceivedLikeRes> {
         private Long chatRoomIdx;
+        private String emailFrom;
         private LocalDateTime LikeCreatedAt;
         private String text;
         private String boardContent;
