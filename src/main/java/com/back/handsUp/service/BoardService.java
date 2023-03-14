@@ -542,6 +542,10 @@ public class BoardService {
                 boardUserList.addAll(this.boardUserRepository.findBoardUserByBoardIdxAndStatus(board, "LIKE"));
             }
 
+        if(boardUserList.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_LIKE_BOARDS);
+        }
+
         List<BoardDto.ReceivedLikeRes> receivedLikeList = new ArrayList<>();
         for(BoardUser boardUser: boardUserList){
             Character character = boardUser.getUserIdx().getCharacter();
@@ -555,6 +559,7 @@ public class BoardService {
             }
 
             BoardDto.ReceivedLikeRes receivedLike = BoardDto.ReceivedLikeRes.builder()
+                    .emailFrom(boardUser.getUserIdx().getEmail())
                     .text("아래 글에 "+boardUser.getUserIdx().getNickname()+"님이 관심있어요")
                     .boardContent(boardUser.getBoardIdx().getContent())
                     .LikeCreatedAt(boardUser.getCreatedAt())
