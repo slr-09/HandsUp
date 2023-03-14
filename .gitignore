@@ -37,7 +37,7 @@ out/
 .vscode/
 
 ###
-src/main/resources/firebase/handsup-c4213-firebase-adminsdk-cecbd-589582696c.json
+src/main/resources/firebase/handsup-9c9e7-firebase-adminsdk-ow0l5-6bb4cd6c8c.json
 
 ### Naver Mail Password (jasypt-encryptor-password) ###
 src/main/resources/jasypt/jasypt-encryptor-password.txt

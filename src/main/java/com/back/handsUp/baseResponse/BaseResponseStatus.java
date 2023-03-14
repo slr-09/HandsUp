@@ -59,6 +59,9 @@ public enum BaseResponseStatus {
     BLOCKED_BOARD_ERROR(false, 4053, "이미 차단된 게시물입니다."),
     NON_EXIST_FCMTOKEN(false, 4054, "상대방의 FCM 토큰이 없습니다."),
 
+    EXIST_CHATROOMKEY(false, 4055, "이미 존재하는 채팅방 키입니다."),
+    NON_EXIST_LIKE_BOARDS(false, 4056, "다른 사람이 좋아요를 누른 게시물이 없습니다."),
+
 
     /**
      * 5000번대 서버 에러

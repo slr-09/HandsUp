@@ -23,20 +23,29 @@ public class ChatRoom extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long chatRoomIdx;
 
+    @Column(nullable = false)
+    private String chatRoomKey;
+
     @OneToOne
     @JoinColumn(name = "boardIdx")
     private Board boardIdx;
 
     @OneToOne
-    @JoinColumn(name = "userIdx")
-    private User userIdx;
+    @JoinColumn(name = "subUserIdx")
+    private User subUserIdx;
+
+    @OneToOne
+    @JoinColumn(name = "hostUserIdx")
+    private User hostUserIdx;
 
     @Column(columnDefinition = "varchar(10) default 'ACTIVE'")
     private String status;
 
     @Builder
-    public ChatRoom(Board boardIdx, User userIdx) {
+    public ChatRoom(Board boardIdx, User subUserIdx, User hostUserIdx, String chatRoomKey) {
         this.boardIdx = boardIdx;
-        this.userIdx = userIdx;
+        this.subUserIdx = subUserIdx;
+        this.hostUserIdx = hostUserIdx;
+        this.chatRoomKey = chatRoomKey;
     }
 }

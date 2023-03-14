@@ -4,6 +4,7 @@ import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.*;
 import com.back.handsUp.domain.chat.ChatRoom;
+import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
@@ -143,16 +144,6 @@ public class BoardService {
         List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
 
         for(BoardDto.BoardWithTag b : getBoards) {
-            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(b.getBoard(), "WRITE").stream().findFirst();
-            if (optional.isEmpty()) {
-                throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
-            }
-            BoardUser boardUser = optional.get();
-
-            Character character = boardUser.getUserIdx().getCharacter();
-            CharacterDto.GetCharacterInfo characterInfo = new CharacterDto.GetCharacterInfo(character.getEye(),
-                    character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
-                    character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
 
             Optional<String> opTagName = this.boardTagRepository.findTagNameByBoard(b.getBoard());
             String tagName;
@@ -162,7 +153,8 @@ public class BoardService {
 
             BoardDto.GetBoardMap getBoardMap = BoardDto.GetBoardMap.builder()
                     .boardIdx(b.getBoard().getBoardIdx())
-                    .character(characterInfo)
+                    .nickname(b.getNickname())
+                    .character(b.getCharacter())
                     .latitude(b.getBoard().getLatitude())
                     .longitude(b.getBoard().getLongitude())
                     .createdAt(b.getBoard().getCreatedAt())
@@ -205,6 +197,19 @@ public class BoardService {
             if(timeCheck.getSeconds() > b.getBoardIdx().getMessageDuration() * 3600L) {
                 b.getBoardIdx().changeStatus("EXPIRED");
             }
+
+            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(b.getBoardIdx(), "WRITE").stream().findFirst();
+            if (optional.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+            }
+            BoardUser boardUser = optional.get();
+
+            Character character = boardUser.getUserIdx().getCharacter();
+            CharacterDto.GetCharacterInfo characterInfo = new CharacterDto.GetCharacterInfo(character.getEye(),
+                    character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
+                    character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
+
+
             //차단 체크
             if(b.getUserIdx()==user && b.getStatus().equals("BLOCK")){
                 blockedBoard.add(b.getBoardIdx());
@@ -218,8 +223,12 @@ public class BoardService {
                     if (opTagName.isEmpty()) {
                         tagName = null;
                     }else tagName = opTagName.get();
+
+
                     BoardDto.BoardWithTag boardWithTag = BoardDto.BoardWithTag.builder()
                             .board(shownBoard)
+                            .nickname(boardUser.getUserIdx().getNickname())
+                            .character(characterInfo)
                             .tag(tagName).build();
 
                     getBoards.add(boardWithTag);
@@ -272,18 +281,18 @@ public class BoardService {
 //Todo : User FcmToken 추가 후 주석 해제.
 //      하트 알림 전송 부분.
 //
-//        Optional<FcmToken> optionalFcmToken = fcmTokenRepository.findFcmTokenByUser(boardUser);
-//        if (optionalFcmToken.isEmpty()) {
-//            throw new BaseException(BaseResponseStatus.NON_EXIST_FCMTOKEN);
-//        }
-//        FcmToken fcmToken = optionalFcmToken.get();
-//        if (!Objects.equals(user.getUserIdx(), boardUser.getUserIdx())) {
-//            try {
-//                firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), boardUser.getNickname(), "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
-//            } catch (Exception e) {
-//                throw new BaseException(BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR);
-//            }
-//        }
+        Optional<FcmToken> optionalFcmToken = fcmTokenRepository.findFcmTokenByUser(boardUser);
+        if (optionalFcmToken.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_FCMTOKEN);
+        }
+        FcmToken fcmToken = optionalFcmToken.get();
+        if (!Objects.equals(user.getUserIdx(), boardUser.getUserIdx())) {
+            try {
+                firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), boardUser.getNickname(), "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
+            } catch (Exception e) {
+                throw new BaseException(BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR);
+            }
+        }
 
 
     }
@@ -533,6 +542,10 @@ public class BoardService {
                 boardUserList.addAll(this.boardUserRepository.findBoardUserByBoardIdxAndStatus(board, "LIKE"));
             }
 
+        if(boardUserList.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_LIKE_BOARDS);
+        }
+
         List<BoardDto.ReceivedLikeRes> receivedLikeList = new ArrayList<>();
         for(BoardUser boardUser: boardUserList){
             Character character = boardUser.getUserIdx().getCharacter();
@@ -540,12 +553,13 @@ public class BoardService {
                     character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
                     character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
 
-            Optional<ChatRoom> chatRoomOptional = this.chatRoomRepository.findChatRoomByBoardIdxAndUserIdx(boardUser.getBoardIdx(), boardUser.getUserIdx());
+            Optional<ChatRoom> chatRoomOptional = this.chatRoomRepository.findChatRoomByBoardIdxAndSubUserIdx(boardUser.getBoardIdx(), boardUser.getUserIdx());
             if(chatRoomOptional.isEmpty()){
                 throw new BaseException(BaseResponseStatus.NON_EXIST_CHATROOMIDX);
             }
 
             BoardDto.ReceivedLikeRes receivedLike = BoardDto.ReceivedLikeRes.builder()
+                    .emailFrom(boardUser.getUserIdx().getEmail())
                     .text("아래 글에 "+boardUser.getUserIdx().getNickname()+"님이 관심있어요")
                     .boardContent(boardUser.getBoardIdx().getContent())
                     .LikeCreatedAt(boardUser.getCreatedAt())

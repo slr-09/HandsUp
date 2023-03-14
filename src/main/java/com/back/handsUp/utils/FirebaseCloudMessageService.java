@@ -25,7 +25,7 @@ public class FirebaseCloudMessageService {
 
     private final FcmTokenRepository fcmTokenRepository;
 
-    private final String API_URL = "https://fcm.googleapis.com/v1/projects/handsup-c4213/messages:send";
+    private final String API_URL = "https://fcm.googleapis.com/v1/projects/handsup-9c9e7/messages:send";
 
     private final ObjectMapper objectMapper;
 
@@ -68,7 +68,7 @@ public class FirebaseCloudMessageService {
         return objectMapper.writeValueAsString(fcmMessage);
     }
     private String getAccessToken() throws IOException {
-        String firebaseConfigPath = "firebase/firebase_service_key";
+        String firebaseConfigPath = "firebase/handsup-9c9e7-firebase-adminsdk-ow0l5-6bb4cd6c8c.json";
 
         GoogleCredentials googleCredentials = GoogleCredentials.fromStream(new ClassPathResource(firebaseConfigPath)
                 .getInputStream())
