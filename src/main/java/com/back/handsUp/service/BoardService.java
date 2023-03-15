@@ -553,18 +553,13 @@ public class BoardService {
                     character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
                     character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
 
-            Optional<ChatRoom> chatRoomOptional = this.chatRoomRepository.findChatRoomByBoardIdxAndSubUserIdx(boardUser.getBoardIdx(), boardUser.getUserIdx());
-            if(chatRoomOptional.isEmpty()){
-                throw new BaseException(BaseResponseStatus.NON_EXIST_CHATROOMIDX);
-            }
-
             BoardDto.ReceivedLikeRes receivedLike = BoardDto.ReceivedLikeRes.builder()
                     .emailFrom(boardUser.getUserIdx().getEmail())
                     .text("아래 글에 "+boardUser.getUserIdx().getNickname()+"님이 관심있어요")
                     .boardContent(boardUser.getBoardIdx().getContent())
                     .LikeCreatedAt(boardUser.getCreatedAt())
                     .character(characterInfo)
-                    .chatRoomIdx(chatRoomOptional.get().getChatRoomIdx())
+                    .boardIdx(boardUser.getBoardIdx().getBoardIdx())
                     .build();
             receivedLikeList.add(receivedLike);
         }
