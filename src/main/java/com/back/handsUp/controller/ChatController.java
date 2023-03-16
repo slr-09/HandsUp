@@ -22,13 +22,13 @@ import java.util.List;
 public class ChatController {
     private final ChatService chatService;
     private final BoardService boardService;
-    //채팅 메세지 조회
+    //채팅방 내 게시글 미리보기
     @ResponseBody
-    @GetMapping("/{chatRoomIdx}")
-    public BaseResponse<ChatDto.ResChat> getChatMessages(Principal principal, @PathVariable Long chatRoomIdx){
+    @GetMapping("/{chatRoomKey}")
+    public BaseResponse<ChatDto.ResBoardPreview> getPreViewBoard(Principal principal, @PathVariable String chatRoomKey){
         try {
-            ChatDto.ResChat resChat = this.chatService.getChatInfo(principal,chatRoomIdx);
-            return new BaseResponse<>(resChat);
+            ChatDto.ResBoardPreview boardPreview = this.chatService.getPreViewBoard(principal,chatRoomKey);
+            return new BaseResponse<>(boardPreview);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
         }

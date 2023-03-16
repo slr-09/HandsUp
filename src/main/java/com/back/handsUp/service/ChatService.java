@@ -41,19 +41,24 @@ public class ChatService {
     private final BoardService boardService;
     private final FcmTokenRepository fcmTokenRepository;
     private final FirebaseCloudMessageService firebaseCloudMessageService;
-    //채팅방 조회
-    public ChatDto.ResChat getChatInfo(Principal principal, Long chatRoomIdx) throws BaseException {
+    //채팅방 내 게시물 미리보기
+    public ChatDto.ResBoardPreview getPreViewBoard(Principal principal, String chatRoomKey) throws BaseException {
         Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
         User loginUser = optional.get();
 
-        Optional<ChatRoom> optional1 = this.chatRoomRepository.findByChatRoomIdx(chatRoomIdx);
+        Optional<ChatRoom> optional1 = this.chatRoomRepository.findChatRoomByChatRoomKey(chatRoomKey);
         if(optional1.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_CHATROOMIDX);
         }
         ChatRoom chatRoom = optional1.get();
+
+        if(loginUser.equals(chatRoom.getHostUserIdx()) || loginUser.equals(chatRoom.getSubUserIdx())){
+        } else {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_CHATROOM_USER);
+        }
 
         Optional<BoardUser> optional2 = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(chatRoom.getBoardIdx(), "WRITE")
                 .stream().findFirst();
@@ -62,20 +67,13 @@ public class ChatService {
         }
         BoardUser boardUser = optional2.get();
 
-        Character character;
-        if(loginUser.equals(boardUser.getUserIdx())){
-            character = chatRoom.getHostUserIdx().getCharacter();
-        } else {
-            character = boardUser.getUserIdx().getCharacter();
-        }
-
-        ChatDto.ResChat resChat = ChatDto.ResChat.builder()
+        ChatDto.ResBoardPreview boardPreview = ChatDto.ResBoardPreview.builder()
                 .board(chatRoom.getBoardIdx())
-                .character(character)
+                .character(chatRoom.getHostUserIdx().getCharacter())
                 .nickname(boardUser.getUserIdx().getNickname())
                 .build();
 
-        return resChat;
+        return boardPreview;
     }
 
     public String blockChatAndBoards(Principal principal, Long chatRoomIdx) throws BaseException {

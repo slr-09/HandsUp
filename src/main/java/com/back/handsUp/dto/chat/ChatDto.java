@@ -13,7 +13,7 @@ public class ChatDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class ResChat {
+    public static class ResBoardPreview {
         private Board board;
         private Character character;
         private String nickname;
