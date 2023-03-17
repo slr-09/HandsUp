@@ -3,7 +3,6 @@ package com.back.handsUp.service;
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.board.*;
-import com.back.handsUp.domain.chat.ChatRoom;
 import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
@@ -15,13 +14,14 @@ import com.back.handsUp.repository.board.BoardRepository;
 import com.back.handsUp.repository.board.BoardTagRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.board.TagRepository;
-import com.back.handsUp.repository.chat.ChatRoomRepository;
 import com.back.handsUp.repository.fcm.FcmTokenRepository;
 import com.back.handsUp.repository.user.SchoolRepository;
 import com.back.handsUp.repository.user.UserRepository;
 import com.back.handsUp.utils.FirebaseCloudMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -43,7 +43,6 @@ public class BoardService {
     private final UserRepository userRepository;
     private final BoardUserRepository boardUserRepository;
     private final FirebaseCloudMessageService firebaseCloudMessageService;
-    private final ChatRoomRepository chatRoomRepository;
     private final FcmTokenRepository fcmTokenRepository;
 
     private final SchoolRepository schoolRepository;
@@ -529,7 +528,7 @@ public class BoardService {
     }
 
     //받은 하트 목록 조회
-    public List<BoardDto.ReceivedLikeRes> receivedLikeList (Principal principal) throws BaseException {
+    public BoardDto.TotalReceivedLikeRes fetchReceivedLikePagesBy (Principal principal, int size, Long lastIdx) throws BaseException {
         Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_USERIDX);
@@ -537,33 +536,44 @@ public class BoardService {
         User user = optional.get();
 
         List<Board> boardList = this.boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE");
-        List<BoardUser> boardUserList = new ArrayList<>();
-        for (Board board : boardList){
-                boardUserList.addAll(this.boardUserRepository.findBoardUserByBoardIdxAndStatus(board, "LIKE"));
-            }
 
-        if(boardUserList.isEmpty()){
+        //페이징 처리
+        Page<BoardUser> boardUsers = fetchReceivedLikes(size, lastIdx, boardList);
+        if(boardUsers.getContent().isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_LIKE_BOARDS);
         }
-
-        List<BoardDto.ReceivedLikeRes> receivedLikeList = new ArrayList<>();
-        for(BoardUser boardUser: boardUserList){
+        //dto 생성
+        List<BoardDto.ReceivedLikeInfo> receivedLikeInfoList = new ArrayList<>();
+        for(BoardUser boardUser: boardUsers.getContent()){
             Character character = boardUser.getUserIdx().getCharacter();
             CharacterDto.GetCharacterInfo characterInfo = new CharacterDto.GetCharacterInfo(character.getEye(),
                     character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
                     character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
 
-            BoardDto.ReceivedLikeRes receivedLike = BoardDto.ReceivedLikeRes.builder()
+            BoardDto.ReceivedLikeInfo receivedLikeInfo = BoardDto.ReceivedLikeInfo.builder()
                     .emailFrom(boardUser.getUserIdx().getEmail())
                     .text("아래 글에 "+boardUser.getUserIdx().getNickname()+"님이 관심있어요")
                     .boardContent(boardUser.getBoardIdx().getContent())
                     .LikeCreatedAt(boardUser.getCreatedAt())
                     .character(characterInfo)
                     .boardIdx(boardUser.getBoardIdx().getBoardIdx())
+                    .boardUserIdx(boardUser.getBoardUserIdx())
                     .build();
-            receivedLikeList.add(receivedLike);
+            receivedLikeInfoList.add(receivedLikeInfo);
         }
-        receivedLikeList.sort(Collections.reverseOrder());
-        return receivedLikeList;
+
+        receivedLikeInfoList.sort(Collections.reverseOrder());
+
+        BoardDto.TotalReceivedLikeRes receivedLikeRes = BoardDto.TotalReceivedLikeRes.builder()
+                .receivedLikeInfo(receivedLikeInfoList)
+                .hasNext(boardUsers.hasNext())
+                .build();
+        return receivedLikeRes;
+    }
+    //받은 좋아요(하트) 목록 페이징으로 가져오기
+    private Page<BoardUser> fetchReceivedLikes(int size, Long lastIdx, List<Board> boardList){
+        PageRequest pageRequest = PageRequest.of(0, size); //페이지는 0으로 고정, 페이지에 표시되는 개수는 size로 결정
+        return lastIdx == null? boardUserRepository.findAllByStatusAndBoardIdxInOrderByBoardUserIdxDesc("LIKE", boardList, pageRequest):
+                boardUserRepository.findByBoardUserIdxLessThanAndStatusAndBoardIdxInOrderByBoardUserIdxDesc(lastIdx, "LIKE", boardList, pageRequest);
     }
 }
