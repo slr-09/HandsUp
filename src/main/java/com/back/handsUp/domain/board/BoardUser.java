@@ -14,14 +14,15 @@ import javax.persistence.*;
 @Table(name = "board_user")
 @NoArgsConstructor
 @DynamicInsert
-@IdClass(BoardUserId.class)
 public class BoardUser extends BaseEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long boardUserIdx;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "boardIdx")
     private Board boardIdx;
 
-    @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userIdx")
     private User userIdx;
