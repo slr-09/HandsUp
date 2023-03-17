@@ -2,9 +2,7 @@ package com.back.handsUp.controller;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponse;
-import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.dto.board.BoardDto;
-import com.back.handsUp.dto.board.BoardPreviewRes;
 import com.back.handsUp.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -123,12 +120,13 @@ public class BoardController {
         }
     }
 
+    //내가 받은 좋아요(하트) 목록 조회
     @ResponseBody
-    @GetMapping("/like")
-    public BaseResponse<List<BoardDto.ReceivedLikeRes>> getReceivedLikeList(Principal principal){
+    @GetMapping({"/like/{size}/{lastIdx}", "/like/{size}/"})
+    public BaseResponse<BoardDto.TotalReceivedLikeRes> getReceivedLikeList(Principal principal, @PathVariable int size, @PathVariable(required = false) Long lastIdx){
         try{
-            List<BoardDto.ReceivedLikeRes>  receivedLikeResList= this.boardService.receivedLikeList(principal);
-            return new BaseResponse<>(receivedLikeResList);
+            BoardDto.TotalReceivedLikeRes receivedLikeRes = this.boardService.fetchReceivedLikePagesBy(principal, size, lastIdx);
+            return new BaseResponse<>(receivedLikeRes);
         } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
