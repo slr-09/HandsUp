@@ -39,4 +39,27 @@ public class ChatDto {
         private Character character;
         private String nickname;
     }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    public static class ReqCheckKey {
+        private String chatRoomKey;
+        private Long boardIdx;
+        private String oppositeUserEmail;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    @Setter
+    public static class ResCheckKey {
+        private Board board;
+        private Character character;
+        private String nickname;
+        private Boolean isSaved;
+    }
+
 }

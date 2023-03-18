@@ -3,6 +3,8 @@ package com.back.handsUp.repository.chat;
 import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.domain.chat.ChatRoom;
 import com.back.handsUp.domain.user.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -17,4 +19,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     List<ChatRoom> findChatRoomByUserIdx(User userIdx);
 
     Optional<ChatRoom> findChatRoomByChatRoomKey(String chatRoomKey);
+
+    Page<ChatRoom> findByIdLessThanOrderByUpdatedAtDesc(Long lastArticleId, PageRequest pageRequest);
 }

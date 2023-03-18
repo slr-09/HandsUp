@@ -20,7 +20,10 @@ import com.back.handsUp.repository.user.UserRepository;
 import com.back.handsUp.utils.FirebaseCloudMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
@@ -165,7 +168,7 @@ public class ChatService {
         }
     }
 
-    public List<ChatDto.ResChatList> viewAllList(Principal principal) throws BaseException {
+    public List<ChatDto.ResChatList> viewAllList(Principal principal, Long lastArticleId, int size) throws BaseException {
         Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if (optionalUser.isEmpty()) {
             throw new BaseException(NON_EXIST_USERIDX);
@@ -191,5 +194,34 @@ public class ChatService {
         }
 
         return chatList;
+    }
+
+    private Page<ChatRoom> fetchPages(Long lastArticleId, int size) {
+        PageRequest pageRequest = PageRequest.of(0, size); // 페이지네이션을 위한 PageRequest, 페이지는 0으로 고정한다.
+        return chatRoomRepository.findByIdLessThanOrderByUpdatedAtDesc(lastArticleId, pageRequest); // JPA 쿼리 메소드
+    }
+
+    public ChatDto.ResCheckKey checkChatKeySaved(Principal principal, ChatDto.ReqCheckKey reqCheckKey) throws BaseException {
+        Optional<User> opOppositeUser = this.userRepository.findByEmailAndStatus(reqCheckKey.getOppositeUserEmail(), "ACTIVE");
+        if (opOppositeUser.isEmpty()) {
+            throw new BaseException(NON_EXIST_USERIDX);
+        }
+        User oppositeUser = opOppositeUser.get();
+
+        Optional<ChatRoom> optionalChatRoom = this.chatRoomRepository.findChatRoomByChatRoomKey(reqCheckKey.getChatRoomKey());
+        Optional<Board> opBoard = this.boardRepository.findByBoardIdx(reqCheckKey.getBoardIdx());
+        if (opBoard.isEmpty()) {
+            throw new BaseException(NON_EXIST_BOARDIDX);
+        }
+        Board board = opBoard.get();
+
+
+        ChatDto.ResCheckKey result = ChatDto.ResCheckKey.builder()
+                .isSaved(optionalChatRoom.isPresent())
+                .board(board)
+                .character(oppositeUser.getCharacter())
+                .nickname(oppositeUser.getNickname()).build();
+
+        return result;
     }
 }

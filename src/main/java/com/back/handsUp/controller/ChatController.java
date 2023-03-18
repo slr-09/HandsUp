@@ -22,14 +22,15 @@ import java.util.List;
 public class ChatController {
     private final ChatService chatService;
     private final BoardService boardService;
+
     //채팅 메세지 조회
     @ResponseBody
     @GetMapping("/{chatRoomIdx}")
-    public BaseResponse<ChatDto.ResChat> getChatMessages(Principal principal, @PathVariable Long chatRoomIdx){
+    public BaseResponse<ChatDto.ResChat> getChatMessages(Principal principal, @PathVariable Long chatRoomIdx) {
         try {
-            ChatDto.ResChat resChat = this.chatService.getChatInfo(principal,chatRoomIdx);
+            ChatDto.ResChat resChat = this.chatService.getChatInfo(principal, chatRoomIdx);
             return new BaseResponse<>(resChat);
-        }catch (BaseException exception){
+        } catch (BaseException exception) {
             return new BaseResponse<>((exception.getStatus()));
         }
     }
@@ -72,10 +73,10 @@ public class ChatController {
     }
 
     @GetMapping("/list")
-    public BaseResponse<List<ChatDto.ResChatList>> viewChatList(Principal principal) {
+    public BaseResponse<List<ChatDto.ResChatList>> viewChatList(Principal principal, @RequestParam Long lastChatroomIdx, @RequestParam int size) {
 
         try {
-            List<ChatDto.ResChatList> result = chatService.viewAllList(principal);
+            List<ChatDto.ResChatList> result = chatService.viewAllList(principal, lastChatroomIdx, size);
 
             return new BaseResponse<>(result);
         } catch (BaseException e) {
@@ -83,4 +84,13 @@ public class ChatController {
         }
     }
 
+    @PostMapping("/check-key")
+    public BaseResponse<ChatDto.ResCheckKey> checkChatKeySaved(Principal principal, ChatDto.ReqCheckKey reqCheckKey) {
+        try {
+            ChatDto.ResCheckKey result = chatService.checkChatKeySaved(principal, reqCheckKey);
+            return new BaseResponse<>(result);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }
