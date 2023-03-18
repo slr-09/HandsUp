@@ -35,9 +35,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.security.Principal;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -175,13 +174,12 @@ public class UserService {
         if (days < 7) {
             throw new BaseException(LIMIT_NICKNAME_CHANGE);
         }
-
         //닉네임 중복 확인
-        optional = this.userRepository.findByNicknameAndSchoolIdx(nickname, findUser.getSchoolIdx());
-        if (!optional.isEmpty()) {
+        List<User> findUsers = this.userRepository.findByNicknameAndSchoolIdx(nickname,
+            findUser.getSchoolIdx(), "ACTIVE");
+        if (!findUsers.isEmpty()) {
             throw new BaseException(EXIST_NICKNAME);
         }
-
 
         try {
             findUser.setNickname(nickname);
@@ -368,16 +366,17 @@ public class UserService {
     //닉네임 중복 확인
     public void checkNickname(UserDto.ReqCheckNickname reqCheckNickname) throws BaseException {
         Optional<School> optionalSchool = this.schoolRepository.findByName(reqCheckNickname.getSchoolName());
-        Optional<User> optional;
-
+        Optional<User> optional = Optional.empty();
+        List<User> findUsers = new ArrayList<>();
         if(!optionalSchool.isEmpty()){
             School school = optionalSchool.get();
-            optional = this.userRepository.findByNicknameAndSchoolIdx(reqCheckNickname.getNickname(), school);
+            findUsers = this.userRepository.findByNicknameAndSchoolIdx(
+                reqCheckNickname.getNickname(), school, "ACTIVE");
         } else {
             optional = this.userRepository.findByNickname(reqCheckNickname.getNickname());
         }
 
-        if(!optional.isEmpty()){
+        if(!findUsers.isEmpty()||!optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.EXIST_NICKNAME);
         }
     }
