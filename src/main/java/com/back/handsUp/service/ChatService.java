@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -168,37 +170,54 @@ public class ChatService {
         }
     }
 
-    public List<ChatDto.ResChatList> viewAllList(Principal principal, Long lastArticleId, int size) throws BaseException {
+    public List<ChatDto.ResChatList> viewAllList(Principal principal, Pageable pageable) throws BaseException {
         Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if (optionalUser.isEmpty()) {
             throw new BaseException(NON_EXIST_USERIDX);
         }
         User user = optionalUser.get();
 
-        List<ChatRoom> allChatRoom = this.chatRoomRepository.findChatRoomByUserIdx(user);
+//        List<ChatRoom> allChatRoom = this.chatRoomRepository.findChatRoomByUserIdx(user);
+
+//        Page<ChatRoom> allChatRoom = fetchPages(lastArticleId, size);
+
+        Page<ChatRoom> chatRooms = chatRoomRepository.findAllProjectedByHostUserIdxOrSubUserIdxOrderByUpdatedAtDesc(user, user, pageable);
 
         List<ChatDto.ResChatList> chatList = new ArrayList<>();
 
-        for (ChatRoom chat : allChatRoom) {
-            ChatDto.ResChatList resChat = new ChatDto.ResChatList();
-            if (chat.getHostUserIdx() == user) { //내가 호스트인 경우 참여자 정보 보내줌
-                resChat.setCharacter(chat.getSubUserIdx().getCharacter());
-                resChat.setNickname(chat.getSubUserIdx().getNickname());
-            } else if (chat.getSubUserIdx() == user) { //내가 참여자인 경우 호스트 정보 보내줌
-                resChat.setCharacter(chat.getHostUserIdx().getCharacter());
-                resChat.setNickname(chat.getHostUserIdx().getNickname());
-            } else continue;
-            resChat.setChatRoomIdx(chat.getChatRoomIdx());
-            resChat.setChatRoomKey(chat.getChatRoomKey());
-            chatList.add(resChat);
-        }
+//        for (ChatRoom chat : allChatRoom) {
+//            ChatDto.ResChatList resChat = new ChatDto.ResChatList();
+//            if (chat.getHostUserIdx() == user) { //내가 호스트인 경우 참여자 정보 보내줌
+//                resChat.setCharacter(chat.getSubUserIdx().getCharacter());
+//                resChat.setNickname(chat.getSubUserIdx().getNickname());
+//            } else if (chat.getSubUserIdx() == user) { //내가 참여자인 경우 호스트 정보 보내줌
+//                resChat.setCharacter(chat.getHostUserIdx().getCharacter());
+//                resChat.setNickname(chat.getHostUserIdx().getNickname());
+//            } else continue;
+//            resChat.setChatRoomIdx(chat.getChatRoomIdx());
+//            resChat.setChatRoomKey(chat.getChatRoomKey());
+//            chatList.add(resChat);
+//        }
 
-        return chatList;
-    }
+//        return chatList;
+        return chatRooms.getContent().stream().map(chatRoom -> {
+            ChatDto.ResChatList chatRoomDto = new ChatDto.ResChatList();
+            chatRoomDto.setChatRoomIdx(chatRoom.getChatRoomIdx());
+            chatRoomDto.setChatRoomKey(chatRoom.getChatRoomKey());
+            chatRoomDto.setUpdatedAt(chatRoom.getUpdatedAt());
 
-    private Page<ChatRoom> fetchPages(Long lastArticleId, int size) {
-        PageRequest pageRequest = PageRequest.of(0, size); // 페이지네이션을 위한 PageRequest, 페이지는 0으로 고정한다.
-        return chatRoomRepository.findByIdLessThanOrderByUpdatedAtDesc(lastArticleId, pageRequest); // JPA 쿼리 메소드
+            User hostUser = chatRoom.getHostUserIdx();
+            User subUser = chatRoom.getSubUserIdx();
+            if (Objects.equals(hostUser.getUserIdx(), user.getUserIdx())) {
+                chatRoomDto.setCharacter(subUser.getCharacter());
+                chatRoomDto.setNickname(subUser.getNickname());
+            } else {
+                chatRoomDto.setCharacter(hostUser.getCharacter());
+                chatRoomDto.setNickname(hostUser.getNickname());
+            }
+
+            return chatRoomDto;
+        }).collect(Collectors.toList());
     }
 
     public ChatDto.ResCheckKey checkChatKeySaved(Principal principal, ChatDto.ReqCheckKey reqCheckKey) throws BaseException {

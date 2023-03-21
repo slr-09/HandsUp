@@ -1,6 +1,7 @@
 package com.back.handsUp.dto.chat;
 
 import com.back.handsUp.domain.board.Board;
+import com.back.handsUp.domain.chat.ChatRoom;
 import com.back.handsUp.domain.user.Character;
 import lombok.*;
 
@@ -38,6 +39,7 @@ public class ChatDto {
         private String chatRoomKey;
         private Character character;
         private String nickname;
+        private LocalDateTime updatedAt;
     }
 
     @AllArgsConstructor
@@ -61,5 +63,4 @@ public class ChatDto {
         private String nickname;
         private Boolean isSaved;
     }
-
 }

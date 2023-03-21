@@ -10,6 +10,7 @@ import com.back.handsUp.service.BoardService;
 import com.back.handsUp.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -73,10 +74,10 @@ public class ChatController {
     }
 
     @GetMapping("/list")
-    public BaseResponse<List<ChatDto.ResChatList>> viewChatList(Principal principal, @RequestParam Long lastChatroomIdx, @RequestParam int size) {
+    public BaseResponse<List<ChatDto.ResChatList>> viewChatList(Principal principal, Pageable pageable) {
 
         try {
-            List<ChatDto.ResChatList> result = chatService.viewAllList(principal, lastChatroomIdx, size);
+            List<ChatDto.ResChatList> result = chatService.viewAllList(principal, pageable);
 
             return new BaseResponse<>(result);
         } catch (BaseException e) {
