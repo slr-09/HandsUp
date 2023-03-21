@@ -60,6 +60,8 @@ public enum BaseResponseStatus {
     NON_EXIST_FCMTOKEN(false, 4054, "상대방의 FCM 토큰이 없습니다."),
 
     EXIST_CHATROOMKEY(false, 4055, "이미 존재하는 채팅방 키입니다."),
+    NON_EXIST_LIKE_BOARDS(false, 4056, "다른 사람이 좋아요를 누른 게시물이 없습니다."),
+    NON_EXIST_CHATROOM_USER(false, 4057, "채팅방 내 존재하는 유저가 아닙니다."),
 
 
     /**

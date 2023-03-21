@@ -1,7 +1,6 @@
 package com.back.handsUp.dto.board;
 
 import com.back.handsUp.domain.board.Board;
-import com.back.handsUp.domain.board.BoardUser;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -104,15 +103,17 @@ public class BoardDto {
     @Getter
     @AllArgsConstructor
     @Builder
-    public static class ReceivedLikeRes implements Comparable<ReceivedLikeRes> {
-        private Long chatRoomIdx;
+    public static class ReceivedLikeInfo implements Comparable<ReceivedLikeInfo> {
+        private Long boardIdx;
+        private String emailFrom;
         private LocalDateTime LikeCreatedAt;
         private String text;
         private String boardContent;
         private CharacterDto.GetCharacterInfo character;
+        private Long boardUserIdx; //페이지네이션을 위한 인덱스
 
         @Override
-        public int compareTo(@NotNull ReceivedLikeRes res) {
+        public int compareTo(@NotNull ReceivedLikeInfo res) {
             if (res.LikeCreatedAt.isBefore(LikeCreatedAt)) {
                 return 1;
             } else if (res.LikeCreatedAt.isAfter(LikeCreatedAt)) {
@@ -120,6 +121,14 @@ public class BoardDto {
             }
             return 0;
         }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class TotalReceivedLikeRes {
+        private List<ReceivedLikeInfo> receivedLikeInfo;
+        private boolean hasNext; //다음 페이지 존재 여부
     }
 
     @Getter
