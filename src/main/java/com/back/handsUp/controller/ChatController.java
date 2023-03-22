@@ -49,10 +49,10 @@ public class ChatController {
     }
 
     @PostMapping("/alarm")
-    public BaseResponse<String> chatAlarm(Principal principal, @RequestBody UserDto.ResEmail email) {
+    public BaseResponse<String> chatAlarm(Principal principal, @RequestBody ChatDto.ResSendChat sendChat) {
 
         try {
-            String result = chatService.chatAlarm(principal, email);
+            String result = chatService.chatAlarm(principal, sendChat);
 
             return new BaseResponse<>(result);
         } catch (BaseException e) {
@@ -85,7 +85,7 @@ public class ChatController {
     }
 
     @PostMapping("/check-key")
-    public BaseResponse<ChatDto.ResCheckKey> checkChatKeySaved(Principal principal, ChatDto.ReqCheckKey reqCheckKey) {
+    public BaseResponse<ChatDto.ResCheckKey> checkChatKeySaved(Principal principal, @RequestBody ChatDto.ReqCheckKey reqCheckKey) {
         try {
             ChatDto.ResCheckKey result = chatService.checkChatKeySaved(principal, reqCheckKey);
             return new BaseResponse<>(result);
@@ -94,4 +94,13 @@ public class ChatController {
         }
     }
 
+    @PostMapping("/read")
+    public BaseResponse<String> readChat(Principal principal, @RequestBody ChatDto.ReadChat resRead) {
+        try {
+            String result = chatService.readChat(principal, resRead);
+            return new BaseResponse<>(result);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }

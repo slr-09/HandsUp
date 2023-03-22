@@ -34,12 +34,24 @@ public class ChatDto {
     @Builder
     @Getter
     @Setter
+    public static class ReadChat {
+        private Long chatRoomIdx;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    @Setter
     public static class ResChatList {
         private Long chatRoomIdx;
         private String chatRoomKey;
         private Character character;
         private String nickname;
         private LocalDateTime updatedAt;
+        private String lastContent;
+        private Long lastSenderIdx;
+        private int notRead;
     }
 
     @AllArgsConstructor
@@ -62,5 +74,16 @@ public class ChatDto {
         private Character character;
         private String nickname;
         private Boolean isSaved;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    @Setter
+    public static class ResSendChat {
+        private String email;
+        private String chatContent;
+        private Long chatRoomIdx;
     }
 }
