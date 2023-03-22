@@ -41,6 +41,14 @@ public class ChatRoom extends BaseEntity {
     @Column(columnDefinition = "varchar(10) default 'ACTIVE'")
     private String status;
 
+    private String lastChatContent;
+
+    private int notRead;
+
+    @OneToOne
+    @JoinColumn(name = "lastSender")
+    private User lastSender;
+
     @Builder
     public ChatRoom(Board boardIdx, User subUserIdx, User hostUserIdx, String chatRoomKey) {
         this.boardIdx = boardIdx;
@@ -48,4 +56,18 @@ public class ChatRoom extends BaseEntity {
         this.hostUserIdx = hostUserIdx;
         this.chatRoomKey = chatRoomKey;
     }
+
+    public void changeLastContent(String lastChatContent, User lastSender) {
+        this.lastChatContent = lastChatContent;
+        this.lastSender = lastSender;
+    }
+
+    public void plusNotRead() {
+        this.notRead += 1;
+    }
+
+    public void read() {
+        this.notRead = 0;
+    }
+
 }
