@@ -183,37 +183,21 @@ public class ChatService {
         }
         User user = optionalUser.get();
 
-//        List<ChatRoom> allChatRoom = this.chatRoomRepository.findChatRoomByUserIdx(user);
-
-//        Page<ChatRoom> allChatRoom = fetchPages(lastArticleId, size);
-
         Page<ChatRoom> chatRooms = chatRoomRepository.findAllProjectedByHostUserIdxOrSubUserIdxOrderByUpdatedAtDesc(user, user, pageable);
 
-        List<ChatDto.ResChatList> chatList = new ArrayList<>();
-
-//        for (ChatRoom chat : allChatRoom) {
-//            ChatDto.ResChatList resChat = new ChatDto.ResChatList();
-//            if (chat.getHostUserIdx() == user) { //내가 호스트인 경우 참여자 정보 보내줌
-//                resChat.setCharacter(chat.getSubUserIdx().getCharacter());
-//                resChat.setNickname(chat.getSubUserIdx().getNickname());
-//            } else if (chat.getSubUserIdx() == user) { //내가 참여자인 경우 호스트 정보 보내줌
-//                resChat.setCharacter(chat.getHostUserIdx().getCharacter());
-//                resChat.setNickname(chat.getHostUserIdx().getNickname());
-//            } else continue;
-//            resChat.setChatRoomIdx(chat.getChatRoomIdx());
-//            resChat.setChatRoomKey(chat.getChatRoomKey());
-//            chatList.add(resChat);
-//        }
-
-//        return chatList;
         return chatRooms.getContent().stream().map(chatRoom -> {
             ChatDto.ResChatList chatRoomDto = new ChatDto.ResChatList();
+
             chatRoomDto.setChatRoomIdx(chatRoom.getChatRoomIdx());
             chatRoomDto.setChatRoomKey(chatRoom.getChatRoomKey());
             chatRoomDto.setUpdatedAt(chatRoom.getUpdatedAt());
             chatRoomDto.setNotRead(chatRoom.getNotRead());
-            chatRoomDto.setLastContent(chatRoom.getLastChatContent());
-            chatRoomDto.setLastSenderIdx(chatRoom.getLastSender().getUserIdx());
+            if (chatRoom.getLastChatContent()==null) {
+                chatRoomDto.setLastContent("아직 채팅이 시작되지 않았습니다[NULL]");
+            }else chatRoomDto.setLastContent(chatRoom.getLastChatContent());
+            if (chatRoom.getLastSender()==null) {
+                chatRoomDto.setLastSenderIdx(-1L);
+            }else chatRoomDto.setLastSenderIdx(chatRoom.getLastSender().getUserIdx());
             User hostUser = chatRoom.getHostUserIdx();
             User subUser = chatRoom.getSubUserIdx();
             if (Objects.equals(hostUser.getUserIdx(), user.getUserIdx())) {
