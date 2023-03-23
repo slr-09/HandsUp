@@ -84,7 +84,7 @@ public class ChatController {
         }
     }
 
-    @PostMapping("/check-key")
+    @GetMapping("/check-key")
     public BaseResponse<ChatDto.ResCheckKey> checkChatKeySaved(Principal principal, @RequestBody ChatDto.ReqCheckKey reqCheckKey) {
         try {
             ChatDto.ResCheckKey result = chatService.checkChatKeySaved(principal, reqCheckKey);
