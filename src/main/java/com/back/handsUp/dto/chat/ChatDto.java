@@ -1,6 +1,7 @@
 package com.back.handsUp.dto.chat;
 
 import com.back.handsUp.domain.board.Board;
+import com.back.handsUp.domain.chat.ChatRoom;
 import com.back.handsUp.domain.user.Character;
 import lombok.*;
 
@@ -33,10 +34,56 @@ public class ChatDto {
     @Builder
     @Getter
     @Setter
+    public static class ReadChat {
+        private Long chatRoomIdx;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    @Setter
     public static class ResChatList {
         private Long chatRoomIdx;
         private String chatRoomKey;
         private Character character;
         private String nickname;
+        private LocalDateTime updatedAt;
+        private String lastContent;
+        private Long lastSenderIdx;
+        private int notRead;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    public static class ReqCheckKey {
+        private String chatRoomKey;
+        private Long boardIdx;
+        private String oppositeUserEmail;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    @Setter
+    public static class ResCheckKey {
+        private Board board;
+        private Character character;
+        private String nickname;
+        private Boolean isSaved;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    @Setter
+    public static class ResSendChat {
+        private String email;
+        private String chatContent;
+        private Long chatRoomIdx;
     }
 }

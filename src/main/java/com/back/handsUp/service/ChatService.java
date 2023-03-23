@@ -20,7 +20,11 @@ import com.back.handsUp.repository.user.UserRepository;
 import com.back.handsUp.utils.FirebaseCloudMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
@@ -28,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -90,10 +95,7 @@ public class ChatService {
         return result;
     }
 
-    public String chatAlarm(Principal principal, UserDto.ResEmail email) throws BaseException {
-
-
-
+    public String chatAlarm(Principal principal, ChatDto.ResSendChat sendChat) throws BaseException {
         Optional<User> optionalMe = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
         if (optionalMe.isEmpty()) {
@@ -101,7 +103,18 @@ public class ChatService {
         }
         User me = optionalMe.get();
 
-        Optional<User> optionalUser = userRepository.findByEmailAndStatus(email.getEmail(), "ACTIVE");
+        Optional<ChatRoom> opChatRoom = chatRoomRepository.findByChatRoomIdx(sendChat.getChatRoomIdx());
+        String chatContent = sendChat.getChatContent();
+        if (opChatRoom.isEmpty()) {
+            throw new BaseException(NON_EXIST_CHATROOMIDX);
+        }
+        ChatRoom chatRoom = opChatRoom.get();
+        chatRoom.changeLastContent(chatContent, me);
+        chatRoom.plusNotRead();
+
+
+
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(sendChat.getEmail(), "ACTIVE");
 
         if (optionalUser.isEmpty()) {
 
@@ -163,31 +176,84 @@ public class ChatService {
         }
     }
 
-    public List<ChatDto.ResChatList> viewAllList(Principal principal) throws BaseException {
+    public List<ChatDto.ResChatList> viewAllList(Principal principal, Pageable pageable) throws BaseException {
         Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if (optionalUser.isEmpty()) {
             throw new BaseException(NON_EXIST_USERIDX);
         }
         User user = optionalUser.get();
 
-        List<ChatRoom> allChatRoom = this.chatRoomRepository.findChatRoomByUserIdx(user);
+        Page<ChatRoom> chatRooms = chatRoomRepository.findAllProjectedByHostUserIdxOrSubUserIdxOrderByUpdatedAtDesc(user, user, pageable);
 
-        List<ChatDto.ResChatList> chatList = new ArrayList<>();
+        return chatRooms.getContent().stream().map(chatRoom -> {
+            ChatDto.ResChatList chatRoomDto = new ChatDto.ResChatList();
 
-        for (ChatRoom chat : allChatRoom) {
-            ChatDto.ResChatList resChat = new ChatDto.ResChatList();
-            if (chat.getHostUserIdx() == user) { //내가 호스트인 경우 참여자 정보 보내줌
-                resChat.setCharacter(chat.getSubUserIdx().getCharacter());
-                resChat.setNickname(chat.getSubUserIdx().getNickname());
-            } else if (chat.getSubUserIdx() == user) { //내가 참여자인 경우 호스트 정보 보내줌
-                resChat.setCharacter(chat.getHostUserIdx().getCharacter());
-                resChat.setNickname(chat.getHostUserIdx().getNickname());
-            } else continue;
-            resChat.setChatRoomIdx(chat.getChatRoomIdx());
-            resChat.setChatRoomKey(chat.getChatRoomKey());
-            chatList.add(resChat);
+            chatRoomDto.setChatRoomIdx(chatRoom.getChatRoomIdx());
+            chatRoomDto.setChatRoomKey(chatRoom.getChatRoomKey());
+            chatRoomDto.setUpdatedAt(chatRoom.getUpdatedAt());
+            chatRoomDto.setNotRead(chatRoom.getNotRead());
+            if (chatRoom.getLastChatContent()==null) {
+                chatRoomDto.setLastContent("아직 채팅이 시작되지 않았습니다[NULL]");
+            }else chatRoomDto.setLastContent(chatRoom.getLastChatContent());
+            if (chatRoom.getLastSender()==null) {
+                chatRoomDto.setLastSenderIdx(-1L);
+            }else chatRoomDto.setLastSenderIdx(chatRoom.getLastSender().getUserIdx());
+            User hostUser = chatRoom.getHostUserIdx();
+            User subUser = chatRoom.getSubUserIdx();
+            if (Objects.equals(hostUser.getUserIdx(), user.getUserIdx())) {
+                chatRoomDto.setCharacter(subUser.getCharacter());
+                chatRoomDto.setNickname(subUser.getNickname());
+            } else {
+                chatRoomDto.setCharacter(hostUser.getCharacter());
+                chatRoomDto.setNickname(hostUser.getNickname());
+            }
+
+            return chatRoomDto;
+        }).collect(Collectors.toList());
+    }
+
+    public ChatDto.ResCheckKey checkChatKeySaved(Principal principal, ChatDto.ReqCheckKey reqCheckKey) throws BaseException {
+        Optional<User> opOppositeUser = this.userRepository.findByEmailAndStatus(reqCheckKey.getOppositeUserEmail(), "ACTIVE");
+        if (opOppositeUser.isEmpty()) {
+            throw new BaseException(NON_EXIST_USERIDX);
         }
+        User oppositeUser = opOppositeUser.get();
 
-        return chatList;
+        Optional<ChatRoom> optionalChatRoom = this.chatRoomRepository.findChatRoomByChatRoomKey(reqCheckKey.getChatRoomKey());
+        Optional<Board> opBoard = this.boardRepository.findByBoardIdx(reqCheckKey.getBoardIdx());
+        if (opBoard.isEmpty()) {
+            throw new BaseException(NON_EXIST_BOARDIDX);
+        }
+        Board board = opBoard.get();
+
+
+        ChatDto.ResCheckKey result = ChatDto.ResCheckKey.builder()
+                .isSaved(optionalChatRoom.isPresent())
+                .board(board)
+                .character(oppositeUser.getCharacter())
+                .nickname(oppositeUser.getNickname()).build();
+
+        return result;
+    }
+
+    public String readChat(Principal principal, ChatDto.ReadChat resRead) throws BaseException{
+        log.info("chat room idx = {}", resRead.getChatRoomIdx());
+        Optional<User> opMe = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
+        if (opMe.isEmpty()) {
+            throw new BaseException(NON_EXIST_USERIDX);
+        }
+        User me = opMe.get();
+        Optional<ChatRoom> opChatRoom = chatRoomRepository.findByChatRoomIdx(resRead.getChatRoomIdx());
+        if (opChatRoom.isEmpty()) {
+            throw new BaseException(NON_EXIST_CHATROOMIDX);
+        }
+        ChatRoom chatRoom = opChatRoom.get();
+
+        if (Objects.equals(me.getUserIdx(), chatRoom.getLastSender().getUserIdx())) {
+            return "변화 없음";
+        }else {
+            chatRoom.read();
+            return "채팅을 읽었습니다.";
+        }
     }
 }

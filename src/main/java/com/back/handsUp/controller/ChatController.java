@@ -10,6 +10,7 @@ import com.back.handsUp.service.BoardService;
 import com.back.handsUp.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -48,10 +49,10 @@ public class ChatController {
     }
 
     @PostMapping("/alarm")
-    public BaseResponse<String> chatAlarm(Principal principal, @RequestBody UserDto.ResEmail email) {
+    public BaseResponse<String> chatAlarm(Principal principal, @RequestBody ChatDto.ResSendChat sendChat) {
 
         try {
-            String result = chatService.chatAlarm(principal, email);
+            String result = chatService.chatAlarm(principal, sendChat);
 
             return new BaseResponse<>(result);
         } catch (BaseException e) {
@@ -72,10 +73,10 @@ public class ChatController {
     }
 
     @GetMapping("/list")
-    public BaseResponse<List<ChatDto.ResChatList>> viewChatList(Principal principal) {
+    public BaseResponse<List<ChatDto.ResChatList>> viewChatList(Principal principal, Pageable pageable) {
 
         try {
-            List<ChatDto.ResChatList> result = chatService.viewAllList(principal);
+            List<ChatDto.ResChatList> result = chatService.viewAllList(principal, pageable);
 
             return new BaseResponse<>(result);
         } catch (BaseException e) {
@@ -83,4 +84,23 @@ public class ChatController {
         }
     }
 
+    @PostMapping("/check-key")
+    public BaseResponse<ChatDto.ResCheckKey> checkChatKeySaved(Principal principal, @RequestBody ChatDto.ReqCheckKey reqCheckKey) {
+        try {
+            ChatDto.ResCheckKey result = chatService.checkChatKeySaved(principal, reqCheckKey);
+            return new BaseResponse<>(result);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @PostMapping("/read")
+    public BaseResponse<String> readChat(Principal principal, @RequestBody ChatDto.ReadChat resRead) {
+        try {
+            String result = chatService.readChat(principal, resRead);
+            return new BaseResponse<>(result);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }
