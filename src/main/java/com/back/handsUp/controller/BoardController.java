@@ -34,7 +34,7 @@ public class BoardController {
 
     //전체 게시물 조회
     @ResponseBody
-    @GetMapping("/showList")
+    @RequestMapping("/showList")
     public BaseResponse<BoardDto.GetBoardList> showBoardList(Principal principal, @RequestBody BoardDto.School school){
         try {
             BoardDto.GetBoardList getBoards = boardService.showBoardList(principal, school.getSchoolName());

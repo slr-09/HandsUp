@@ -196,8 +196,8 @@ public class ChatService {
                 chatRoomDto.setLastContent("아직 채팅이 시작되지 않았습니다[NULL]");
             }else chatRoomDto.setLastContent(chatRoom.getLastChatContent());
             if (chatRoom.getLastSender()==null) {
-                chatRoomDto.setLastSenderIdx(-1L);
-            }else chatRoomDto.setLastSenderIdx(chatRoom.getLastSender().getUserIdx());
+                chatRoomDto.setLastSenderEmail("아직 채팅이 시작되지 않았습니다[NULL]");
+            }else chatRoomDto.setLastSenderEmail(chatRoom.getLastSender().getEmail());
             User hostUser = chatRoom.getHostUserIdx();
             User subUser = chatRoom.getSubUserIdx();
             if (Objects.equals(hostUser.getUserIdx(), user.getUserIdx())) {
