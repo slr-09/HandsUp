@@ -50,7 +50,7 @@ public class ChatDto {
         private String nickname;
         private LocalDateTime updatedAt;
         private String lastContent;
-        private Long lastSenderIdx;
+        private String lastSenderEmail;
         private int notRead;
     }
 
