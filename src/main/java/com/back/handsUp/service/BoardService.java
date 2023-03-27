@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -30,6 +31,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
 @Service
@@ -295,12 +298,10 @@ public class BoardService {
 
 
     }
+    //내 게시물 조회 페이징
+    public BoardDto.MyBoard viewMyBoard(Principal principal, int page, int size) throws BaseException{
 
-    public BoardDto.MyBoard viewMyBoard(Principal principal) throws BaseException{
-        //long myIdx = 1L; // = jwtService.getUserIdx(token);
-        log.info("principal.getName() = {}",principal.getName());
         Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
-
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
@@ -308,20 +309,20 @@ public class BoardService {
 
         Character character = user.getCharacter();
 
-
-//        List<Board> boardUser = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE");
-
-
-
-        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE").stream()
+        Pageable pageable = PageRequest.of(page,size);
+        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable).stream()
                 .map(Board::toPreviewRes)
                 .collect(Collectors.toList());
 
-        BoardDto.MyBoard myBoard = BoardDto.MyBoard.builder().myBoardList(myBoardList).character(character).build();
-
-
+        BoardDto.MyBoard myBoard = BoardDto.MyBoard.builder().myBoardList(myBoardList)
+            .character(character)
+            .hasNext(myBoardList.size()>page*size)
+            .build();
         return myBoard;
     }
+
+
+
 
     public void addBoard(Principal principal, BoardDto.GetBoardInfo boardInfo) throws BaseException {
 
