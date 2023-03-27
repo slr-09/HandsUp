@@ -6,10 +6,12 @@ import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,5 +37,7 @@ public interface BoardUserRepository extends JpaRepository<BoardUser, Long> {
 
     Page<BoardUser> findAllByStatusAndBoardIdxInOrderByBoardUserIdxDesc(String status, List<Board> boardList, PageRequest pageRequest);
 
+    @Query("select b.boardIdx from BoardUser b where b.userIdx = ?1 and b.status = ?2")
+    Page<Board> findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(User userIdx, String status, Pageable pageable);
 }
 

@@ -98,6 +98,8 @@ public class BoardDto {
     public static class MyBoard {
         private Character character;
         private List<BoardPreviewRes> myBoardList;
+        private boolean hasNext;
+
     }
 
     @Getter
