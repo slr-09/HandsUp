@@ -111,18 +111,82 @@ public class BoardService {
     }
 
     //전체 게시물 조회
-    public BoardDto.GetBoardList showBoardList(Principal principal, String schoolName) throws BaseException {
+    public BoardDto.GetBoardList showBoardList(Principal principal, Pageable pageable) throws BaseException {
 
-        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
-        if(optionalSchool.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
+        //학교 이름으로 찾기
+//        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
+//        if(optionalSchool.isEmpty()) {
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
+//        }
+//        School school = optionalSchool.get();
+
+//        List<BoardDto.BoardWithTag> getBoards = getBoards(principal, school);
+        //조회하는 유저
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
+
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
-        School school = optionalSchool.get();
+        User user = optionalUser.get();
 
-        List<BoardDto.BoardWithTag> getBoards = getBoards(principal, school);
+        Page<BoardUser> getBoardsPage = boardUserRepository.findBoardUserIdxByStatusInOrderByBoardUserIdxDesc("ACTIVE", pageable);
+
+        List<BoardDto.BoardWithTag> getBoards = new ArrayList<>();
+        List<Board> blockedBoard = new ArrayList<>();
+
+        LocalDateTime currentTime = LocalDateTime.now();
+
+
+        for (BoardUser b: getBoardsPage){
+            //시간 만료 체크
+            Duration timeCheck = Duration.between(b.getBoardIdx().getCreatedAt(),currentTime);
+//            log.info("timecheck={}",timeCheck.getSeconds());
+            if(timeCheck.getSeconds() > b.getBoardIdx().getMessageDuration() * 3600L) {
+                b.getBoardIdx().changeStatus("EXPIRED");
+            }
+
+            Optional<BoardUser> optional = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(b.getBoardIdx(), "WRITE").stream().findFirst();
+            if (optional.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
+            }
+            BoardUser boardUser = optional.get();
+
+            Character character = boardUser.getUserIdx().getCharacter();
+            CharacterDto.GetCharacterInfo characterInfo = new CharacterDto.GetCharacterInfo(character.getEye(),
+                    character.getEyeBrow(), character.getGlasses(), character.getNose(), character.getMouth(),
+                    character.getHair(), character.getHairColor(), character.getSkinColor(), character.getBackGroundColor());
+
+
+            //차단 체크
+            if(b.getUserIdx()==user && b.getStatus().equals("BLOCK")){
+                blockedBoard.add(b.getBoardIdx());
+            }else{
+                if(!getBoards.contains(b.getBoardIdx()) && b.getBoardIdx().getStatus().equals("ACTIVE")){
+                    Board shownBoard = b.getBoardIdx();
+
+                    String tagName;
+
+                    Optional<String> opTagName = this.boardTagRepository.findTagNameByBoard(shownBoard);
+                    if (opTagName.isEmpty()) {
+                        tagName = null;
+                    }else tagName = opTagName.get();
+
+
+                    BoardDto.BoardWithTag boardWithTag = BoardDto.BoardWithTag.builder()
+                            .board(shownBoard)
+                            .nickname(boardUser.getUserIdx().getNickname())
+                            .character(characterInfo)
+                            .tag(tagName).build();
+
+                    getBoards.add(boardWithTag);
+                }
+            }
+        }
+
+        getBoards.removeAll(blockedBoard);
 
         BoardDto.GetBoardList getBoardList = BoardDto.GetBoardList.builder()
-                .schoolName(schoolName)
+//                .schoolName(schoolName)
                 .getBoardList(getBoards)
                 .build();
 
@@ -130,18 +194,20 @@ public class BoardService {
 
     }
 
+
     // 전체 게시물(지도 상) 조회
     // 캐릭터, 위치(Board), boardIdx
-    public BoardDto.GetBoardMapAndSchool showBoardMapList(Principal principal, String schoolName) throws BaseException {
+    public BoardDto.GetBoardMapAndSchool showBoardMapList(Principal principal) throws BaseException {
 
-        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
-        
-        if(optionalSchool.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
-        }
-        School school = optionalSchool.get();
+        //학교 정보
+//        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
+//
+//        if(optionalSchool.isEmpty()) {
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
+//        }
+//        School school = optionalSchool.get();
 
-        List<BoardDto.BoardWithTag> getBoards = getBoards(principal, school);
+        List<BoardDto.BoardWithTag> getBoards = getBoards(principal);
 
         List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
 
@@ -167,7 +233,7 @@ public class BoardService {
         }
 
         BoardDto.GetBoardMapAndSchool getBoardMapAndSchool = BoardDto.GetBoardMapAndSchool.builder()
-                .schoolName(schoolName)
+//                .schoolName(schoolName)
                 .getBoardMap(getBoardsMapList)
                 .build();
 
@@ -175,7 +241,7 @@ public class BoardService {
     }
 
     //게시물 조회 리스트,지도 중복 코드
-    public List<BoardDto.BoardWithTag> getBoards(Principal principal, School school) throws BaseException {
+    public List<BoardDto.BoardWithTag> getBoards(Principal principal) throws BaseException {
         //조회하는 유저
         Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
@@ -184,7 +250,8 @@ public class BoardService {
         }
         User user = optionalUser.get();
 
-        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(school, "ACTIVE");
+//        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(school, "ACTIVE");
+        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardUserByStatus("ACTIVE");
 
         List<BoardDto.BoardWithTag> getBoards = new ArrayList<>();
         List<Board> blockedBoard = new ArrayList<>();

@@ -31,6 +31,9 @@ public interface BoardUserRepository extends JpaRepository<BoardUser, Long> {
     @Query("select b from BoardUser b where b.userIdx.schoolIdx = ?1 and b.boardIdx.status = ?2")
     List<BoardUser> findBoardBySchoolAndStatus(School schoolIdx, String status);
 
+    @Query("select b from BoardUser b where b.boardIdx.status = ?1")
+    List<BoardUser> findBoardUserByStatus(String status);
+
     List<BoardUser> findBoardUserByBoardIdxAndStatus(Board boardIdx, String status);
 
     Page<BoardUser> findByBoardUserIdxLessThanAndStatusAndBoardIdxInOrderByBoardUserIdxDesc(Long boardUserIdx, String status, List<Board> boardList, PageRequest pageRequest);
@@ -39,5 +42,8 @@ public interface BoardUserRepository extends JpaRepository<BoardUser, Long> {
 
     @Query("select b.boardIdx from BoardUser b where b.userIdx = ?1 and b.status = ?2")
     Page<Board> findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(User userIdx, String status, Pageable pageable);
+
+    @Query("select b from BoardUser b where b.boardIdx.status = ?1")
+    Page<BoardUser> findBoardUserIdxByStatusInOrderByBoardUserIdxDesc(String status, Pageable pageable);
 }
 
