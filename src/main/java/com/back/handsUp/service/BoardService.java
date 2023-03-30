@@ -197,16 +197,17 @@ public class BoardService {
 
     // 전체 게시물(지도 상) 조회
     // 캐릭터, 위치(Board), boardIdx
-    public BoardDto.GetBoardMapAndSchool showBoardMapList(Principal principal, String schoolName) throws BaseException {
+    public BoardDto.GetBoardMapAndSchool showBoardMapList(Principal principal) throws BaseException {
 
-        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
-        
-        if(optionalSchool.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
-        }
-        School school = optionalSchool.get();
+        //학교 정보
+//        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
+//
+//        if(optionalSchool.isEmpty()) {
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
+//        }
+//        School school = optionalSchool.get();
 
-        List<BoardDto.BoardWithTag> getBoards = getBoards(principal, school);
+        List<BoardDto.BoardWithTag> getBoards = getBoards(principal);
 
         List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
 
@@ -232,7 +233,7 @@ public class BoardService {
         }
 
         BoardDto.GetBoardMapAndSchool getBoardMapAndSchool = BoardDto.GetBoardMapAndSchool.builder()
-                .schoolName(schoolName)
+//                .schoolName(schoolName)
                 .getBoardMap(getBoardsMapList)
                 .build();
 
@@ -240,7 +241,7 @@ public class BoardService {
     }
 
     //게시물 조회 리스트,지도 중복 코드
-    public List<BoardDto.BoardWithTag> getBoards(Principal principal, School school) throws BaseException {
+    public List<BoardDto.BoardWithTag> getBoards(Principal principal) throws BaseException {
         //조회하는 유저
         Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
 
@@ -249,7 +250,8 @@ public class BoardService {
         }
         User user = optionalUser.get();
 
-        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(school, "ACTIVE");
+//        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(school, "ACTIVE");
+        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardUserByStatus("ACTIVE");
 
         List<BoardDto.BoardWithTag> getBoards = new ArrayList<>();
         List<Board> blockedBoard = new ArrayList<>();

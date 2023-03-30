@@ -48,9 +48,9 @@ public class BoardController {
     //전체 게시물(지도 상) 조회
     @ResponseBody
     @GetMapping("/showMapList")
-    public BaseResponse<BoardDto.GetBoardMapAndSchool> showBoardMapList(Principal principal, @RequestBody BoardDto.School school){
+    public BaseResponse<BoardDto.GetBoardMapAndSchool> showBoardMapList(Principal principal){
         try {
-            BoardDto.GetBoardMapAndSchool getBoardsMap = boardService.showBoardMapList(principal, school.getSchoolName());
+            BoardDto.GetBoardMapAndSchool getBoardsMap = boardService.showBoardMapList(principal);
             return new BaseResponse<>(getBoardsMap);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
