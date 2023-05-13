@@ -72,6 +72,8 @@ public class BoardDto {
     @Builder
     public static class SingleBoardRes {
         private String nickname;
+        private String schoolName;
+        private String locationAgreement;
         private double latitude;
         private double longitude;
         private String content;
