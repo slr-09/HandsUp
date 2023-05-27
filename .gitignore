@@ -36,6 +36,8 @@ out/
 ### VS Code ###
 .vscode/
 
+.DS_Store
+
 ###
 src/main/resources/firebase/handsup-9c9e7-firebase-adminsdk-ow0l5-6bb4cd6c8c.json
 

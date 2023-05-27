@@ -52,8 +52,8 @@ public class BoardDto {
 
     @Builder
     public static class GetBoardList {
-//        @JsonProperty
-//        private String schoolName;
+        @JsonProperty
+        private String schoolName;
         @JsonProperty
         private List<BoardWithTag> getBoardList;
     }
