@@ -314,6 +314,7 @@ public class BoardService {
 
 
         List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE").stream()
+                .filter(board -> board.getStatus().equals("ACTIVE"))
                 .map(Board::toPreviewRes)
                 .collect(Collectors.toList());
 
