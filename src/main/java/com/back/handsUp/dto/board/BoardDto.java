@@ -44,8 +44,8 @@ public class BoardDto {
 
     @Builder
     public static class GetBoardMapAndSchool {
-        @JsonProperty
-        private String schoolName;
+//        @JsonProperty
+//        private String schoolName;
         @JsonProperty
         private List<GetBoardMap> getBoardMap;
     }
@@ -72,6 +72,8 @@ public class BoardDto {
     @Builder
     public static class SingleBoardRes {
         private String nickname;
+        private String schoolName;
+        private String locationAgreement;
         private double latitude;
         private double longitude;
         private String content;
@@ -98,6 +100,8 @@ public class BoardDto {
     public static class MyBoard {
         private Character character;
         private List<BoardPreviewRes> myBoardList;
+        private boolean hasNext;
+
     }
 
     @Getter

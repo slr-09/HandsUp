@@ -6,6 +6,7 @@ import com.back.handsUp.dto.board.BoardDto;
 import com.back.handsUp.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,9 +36,9 @@ public class BoardController {
     //전체 게시물 조회
     @ResponseBody
     @RequestMapping("/showList")
-    public BaseResponse<BoardDto.GetBoardList> showBoardList(Principal principal, @RequestBody BoardDto.School school){
+    public BaseResponse<BoardDto.GetBoardList> showBoardList(Principal principal, Pageable pageable){
         try {
-            BoardDto.GetBoardList getBoards = boardService.showBoardList(principal, school.getSchoolName());
+            BoardDto.GetBoardList getBoards = boardService.showBoardList(principal, pageable);
             return new BaseResponse<>(getBoards);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
@@ -46,10 +47,10 @@ public class BoardController {
 
     //전체 게시물(지도 상) 조회
     @ResponseBody
-    @GetMapping("/showMapList")
-    public BaseResponse<BoardDto.GetBoardMapAndSchool> showBoardMapList(Principal principal, @RequestBody BoardDto.School school){
+    @RequestMapping("/showMapList")
+    public BaseResponse<BoardDto.GetBoardMapAndSchool> showBoardMapList(Principal principal){
         try {
-            BoardDto.GetBoardMapAndSchool getBoardsMap = boardService.showBoardMapList(principal, school.getSchoolName());
+            BoardDto.GetBoardMapAndSchool getBoardsMap = boardService.showBoardMapList(principal);
             return new BaseResponse<>(getBoardsMap);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
@@ -67,10 +68,21 @@ public class BoardController {
     }
 
     //본인 게시글 조회
-    @GetMapping("/myBoards")
-    public BaseResponse<BoardDto.MyBoard> viewMyBoard(Principal principal) {
+    // @GetMapping("/myBoards")
+    // public BaseResponse<BoardDto.MyBoard> viewMyBoard(Principal principal) {
+    //     try {
+    //         BoardDto.MyBoard myBoards = boardService.viewMyBoard(principal);
+    //         return new BaseResponse<>(myBoards);
+    //     } catch (BaseException e) {
+    //         return new BaseResponse<>(e.getStatus());
+    //     }
+    // }
+
+    @GetMapping({"/myBoards/{page}/{size}", "/myBoards/{size}/"})
+    public BaseResponse<BoardDto.MyBoard> viewMyBoard(Principal principal, @PathVariable int size, @PathVariable(required = false) Integer page){
         try {
-            BoardDto.MyBoard myBoards = boardService.viewMyBoard(principal);
+            if(page==null) page =0;//page값이 안 들어오면 첫 페이지부터
+            BoardDto.MyBoard myBoards = boardService.viewMyBoard(principal, page, size);
             return new BaseResponse<>(myBoards);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());

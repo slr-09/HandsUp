@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -30,6 +31,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
 
 @Service
@@ -100,7 +103,9 @@ public class BoardService {
                 .content(board.getContent())
                 .tag(tag.getName())
                 .nickname(boardUser.getNickname())
+                .schoolName(boardUser.getSchoolIdx().getName())
                 .messageDuration(board.getMessageDuration())
+                .locationAgreement(board.getIndicateLocation())
                 .latitude(board.getLatitude())
                 .longitude(board.getLongitude())
                 .didLike(didLike)
@@ -108,18 +113,27 @@ public class BoardService {
     }
 
     //전체 게시물 조회
-    public BoardDto.GetBoardList showBoardList(Principal principal, String schoolName) throws BaseException {
+    public BoardDto.GetBoardList showBoardList(Principal principal, Pageable pageable) throws BaseException {
 
-        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
-        if(optionalSchool.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
+        //학교 이름으로 찾기
+//        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
+//        if(optionalSchool.isEmpty()) {
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
+//        }
+//        School school = optionalSchool.get();
+
+        //조회하는 유저
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
+
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
-        School school = optionalSchool.get();
+        User user = optionalUser.get();
 
-        List<BoardDto.BoardWithTag> getBoards = getBoards(principal, school);
+        List<BoardDto.BoardWithTag> getBoards = getBoards(principal, user.getSchoolIdx());
 
         BoardDto.GetBoardList getBoardList = BoardDto.GetBoardList.builder()
-                .schoolName(schoolName)
+                .schoolName(user.getSchoolIdx().getName())
                 .getBoardList(getBoards)
                 .build();
 
@@ -127,18 +141,27 @@ public class BoardService {
 
     }
 
+
     // 전체 게시물(지도 상) 조회
     // 캐릭터, 위치(Board), boardIdx
-    public BoardDto.GetBoardMapAndSchool showBoardMapList(Principal principal, String schoolName) throws BaseException {
+    public BoardDto.GetBoardMapAndSchool showBoardMapList(Principal principal) throws BaseException {
 
-        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
-        
-        if(optionalSchool.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
+        //학교 정보
+//        Optional<School> optionalSchool = schoolRepository.findByName(schoolName);
+//
+//        if(optionalSchool.isEmpty()) {
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_SCHOOLNAME);
+//        }
+//        School school = optionalSchool.get();
+        //조회하는 유저
+        Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
+
+        if (optionalUser.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
-        School school = optionalSchool.get();
+        User user = optionalUser.get();
 
-        List<BoardDto.BoardWithTag> getBoards = getBoards(principal, school);
+        List<BoardDto.BoardWithTag> getBoards = getBoards(principal, user.getSchoolIdx());
 
         List<BoardDto.GetBoardMap> getBoardsMapList = new ArrayList<>();
 
@@ -164,7 +187,7 @@ public class BoardService {
         }
 
         BoardDto.GetBoardMapAndSchool getBoardMapAndSchool = BoardDto.GetBoardMapAndSchool.builder()
-                .schoolName(schoolName)
+//                .schoolName(schoolName)
                 .getBoardMap(getBoardsMapList)
                 .build();
 
@@ -182,6 +205,7 @@ public class BoardService {
         User user = optionalUser.get();
 
         List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(school, "ACTIVE");
+//        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardUserByStatus("ACTIVE");
 
         List<BoardDto.BoardWithTag> getBoards = new ArrayList<>();
         List<Board> blockedBoard = new ArrayList<>();
@@ -295,12 +319,10 @@ public class BoardService {
 
 
     }
+    //내 게시물 조회 페이징
+    public BoardDto.MyBoard viewMyBoard(Principal principal, int page, int size) throws BaseException{
 
-    public BoardDto.MyBoard viewMyBoard(Principal principal) throws BaseException{
-        //long myIdx = 1L; // = jwtService.getUserIdx(token);
-        log.info("principal.getName() = {}",principal.getName());
         Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
-
         if (optionalUser.isEmpty()) {
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
@@ -308,21 +330,20 @@ public class BoardService {
 
         Character character = user.getCharacter();
 
-
-//        List<Board> boardUser = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE");
-
-
-
-        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatus(user, "WRITE").stream()
-                .filter(board -> board.getStatus().equals("ACTIVE"))
+        Pageable pageable = PageRequest.of(page,size);
+        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable).stream()
                 .map(Board::toPreviewRes)
                 .collect(Collectors.toList());
 
-        BoardDto.MyBoard myBoard = BoardDto.MyBoard.builder().myBoardList(myBoardList).character(character).build();
-
-
+        BoardDto.MyBoard myBoard = BoardDto.MyBoard.builder().myBoardList(myBoardList)
+            .character(character)
+            .hasNext(myBoardList.size()>page*size)
+            .build();
         return myBoard;
     }
+
+
+
 
     public void addBoard(Principal principal, BoardDto.GetBoardInfo boardInfo) throws BaseException {
 
