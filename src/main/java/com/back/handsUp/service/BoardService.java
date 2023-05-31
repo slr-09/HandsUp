@@ -332,6 +332,7 @@ public class BoardService {
 
         Pageable pageable = PageRequest.of(page,size);
         List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable).stream()
+                .filter(board -> board.getStatus().equals("ACTIVE"))
                 .map(Board::toPreviewRes)
                 .collect(Collectors.toList());
 
