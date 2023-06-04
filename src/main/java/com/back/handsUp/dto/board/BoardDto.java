@@ -65,6 +65,7 @@ public class BoardDto {
         private String nickname;
         private CharacterDto.GetCharacterInfo character;
         private String tag;
+        private String schoolName;
     }
 
     @Getter
