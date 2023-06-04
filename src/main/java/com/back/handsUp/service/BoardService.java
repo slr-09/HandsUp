@@ -252,7 +252,8 @@ public class BoardService {
                             .board(shownBoard)
                             .nickname(boardUser.getUserIdx().getNickname())
                             .character(characterInfo)
-                            .tag(tagName).build();
+                            .tag(tagName)
+                            .schoolName(school.getName()).build();
 
                     getBoards.add(boardWithTag);
                 }
