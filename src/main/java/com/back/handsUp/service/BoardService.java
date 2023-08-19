@@ -2,6 +2,7 @@ package com.back.handsUp.service;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.Notification;
 import com.back.handsUp.domain.board.*;
 import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.user.Character;
@@ -10,6 +11,7 @@ import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardDto;
 import com.back.handsUp.dto.board.BoardPreviewRes;
 import com.back.handsUp.dto.user.CharacterDto;
+import com.back.handsUp.repository.NotificationRepository;
 import com.back.handsUp.repository.board.BoardRepository;
 import com.back.handsUp.repository.board.BoardTagRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
@@ -33,8 +35,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
-import static com.back.handsUp.baseResponse.BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR;
+import static com.back.handsUp.baseResponse.BaseResponseStatus.*;
 
 @Service
 @Slf4j
@@ -50,6 +51,7 @@ public class BoardService {
     private final FcmTokenRepository fcmTokenRepository;
 
     private final SchoolRepository schoolRepository;
+    private final NotificationRepository notificationRepository;
 
 
     //단일 게시물 조회
@@ -315,8 +317,15 @@ public class BoardService {
                 .boardIdx(board)
                 .status("LIKE").build();
 
+        Notification notificationEntity = Notification.builder()
+                .userIdx(boardUser)
+                .title(user.getNickname())
+                .body("채팅이 도착하였습니다.")
+                .build();
+
         try {
             boardUserRepository.save(likeEntity);
+            notificationRepository.save(notificationEntity);
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
@@ -618,8 +627,16 @@ public class BoardService {
                 boardUserRepository.findByBoardUserIdxLessThanAndStatusAndBoardIdxInOrderByBoardUserIdxDesc(lastIdx, "LIKE", boardList, pageRequest);
     }
 
-    public void testFcmToken(String fcmToken) throws BaseException {
+    public void testFcmToken(Principal principal, String fcmToken) throws BaseException {
+        User user = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE")
+                .orElseThrow(() -> new BaseException(NON_EXIST_USERIDX));
+        Notification notificationEntity = Notification.builder()
+                .userIdx(user)
+                .title("TEST")
+                .body("NOTIFICATION TEST")
+                .build();
         try {
+            notificationRepository.save(notificationEntity);
             firebaseCloudMessageService.sendMessageTo(fcmToken, "TEST", "NOTIFICATION TEST");
         } catch (Exception e) {
             e.printStackTrace();

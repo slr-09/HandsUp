@@ -35,7 +35,7 @@ public class Notification extends BaseEntity {
     private String body;
 
     @Builder
-    public Notification(BaseResponseStatus status, User userIdx, String title, String body) {
+    public Notification(User userIdx, String title, String body) {
         this.userIdx = userIdx;
         this.title = title;
         this.body = body;

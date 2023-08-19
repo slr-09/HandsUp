@@ -150,9 +150,9 @@ public class BoardController {
     }
 
     @PostMapping("/test/fcm-token")
-    public BaseResponse<String> testToSendFcmToken(@RequestParam String fcmToken) {
+    public BaseResponse<String> testToSendFcmToken(Principal principal, @RequestParam String fcmToken) {
         try {
-            boardService.testFcmToken(fcmToken);
+            boardService.testFcmToken(principal, fcmToken);
             return new BaseResponse<>("푸쉬 알림을 보냈습니다.");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());

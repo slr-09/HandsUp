@@ -4,6 +4,7 @@ import static com.back.handsUp.baseResponse.BaseResponseStatus.*;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.Notification;
 import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.domain.board.BoardUser;
 import com.back.handsUp.domain.chat.ChatRoom;
@@ -12,6 +13,7 @@ import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.chat.ChatDto;
 import com.back.handsUp.dto.user.UserDto;
+import com.back.handsUp.repository.NotificationRepository;
 import com.back.handsUp.repository.board.BoardRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.chat.ChatRoomRepository;
@@ -46,6 +48,8 @@ public class ChatService {
     private final BoardService boardService;
     private final FcmTokenRepository fcmTokenRepository;
     private final FirebaseCloudMessageService firebaseCloudMessageService;
+
+    private final NotificationRepository notificationRepository;
     //채팅방 내 게시물 미리보기
     public ChatDto.ResBoardPreview getPreViewBoard(Principal principal, String chatRoomKey) throws BaseException {
         Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
@@ -127,7 +131,13 @@ public class ChatService {
         }
         FcmToken fcmToken = optionalFcmToken.get();
 
+        Notification notificationEntity = Notification.builder()
+                .userIdx(you)
+                .title(me.getNickname())
+                .body("채팅이 도착하였습니다.")
+                .build();
         try {
+            notificationRepository.save(notificationEntity);
             firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), me.getNickname(), "채팅이 도착하였습니다.");
             return "채팅 알림을 성공적으로 보냈습니다.";
         } catch (Exception e) {

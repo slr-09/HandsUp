@@ -6,6 +6,7 @@ import com.back.handsUp.baseResponse.BaseResponseStatus;
 import com.back.handsUp.domain.Notification;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
+import com.back.handsUp.dto.NotificationResponse;
 import com.back.handsUp.dto.fcmToken.FcmTokenDto;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
@@ -204,11 +205,13 @@ public class UserController {
     }
 
     @GetMapping("/notification")
-    public BaseResponse<List<Notification>> notificationList(Principal principal,
-                                                             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+    public BaseResponse<List<NotificationResponse>> notificationList(Principal principal,
+                                                             @PageableDefault(size = 20,
+                                                                     sort = "createdAt",
+                                                                     direction = Sort.Direction.DESC)
                                                              Pageable pageable) {
         try {
-            List<Notification> notifications = userService.notificationList(principal, pageable);
+            List<NotificationResponse> notifications = userService.notificationList(principal, pageable);
             return new BaseResponse<>(notifications);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());

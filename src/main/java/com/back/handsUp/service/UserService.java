@@ -10,6 +10,7 @@ import com.back.handsUp.domain.jwt.RefreshToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
+import com.back.handsUp.dto.NotificationResponse;
 import com.back.handsUp.dto.fcmToken.FcmTokenDto;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
@@ -42,6 +43,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -405,11 +407,14 @@ public class UserService {
         firebaseCloudMessageService.deleteToken(user);
     }
 
-    public List<Notification> notificationList(Principal principal, Pageable pageable) throws BaseException {
+    public List<NotificationResponse> notificationList(Principal principal, Pageable pageable) throws BaseException {
         User user = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE")
                 .orElseThrow(() -> new BaseException(NON_EXIST_USERIDX));
 
+        log.info("ajfkjal");
         List<Notification> byUserIdx = notificationRepository.findByUserIdx(user, pageable);
-        return byUserIdx;
+        log.info("notification : {}", byUserIdx);
+        List<NotificationResponse> responseList = byUserIdx.stream().map(NotificationResponse::entityToDto).collect(Collectors.toList());
+        return responseList;
     }
 }
