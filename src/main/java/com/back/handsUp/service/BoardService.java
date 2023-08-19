@@ -349,6 +349,7 @@ public class BoardService {
                 firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), boardUser.getNickname(), "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
             } catch (Exception e) {
                 e.printStackTrace();
+                log.info("ERROR MESSAGE : {}", e.getMessage());
                 throw new BaseException(BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR);
             }
         }
