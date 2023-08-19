@@ -351,6 +351,9 @@ public class BoardService {
 
         Character character = user.getCharacter();
 
+        Page<Board> write = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable);
+        log.info("my write list : {}", write);
+
         List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable)
                 .stream()
                 .filter(board -> board.getStatus().equals("ACTIVE"))
