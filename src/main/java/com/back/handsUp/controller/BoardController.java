@@ -63,8 +63,8 @@ public class BoardController {
     @PostMapping("/{boardIdx}/like")
     public BaseResponse<String> like(Principal principal,@PathVariable Long boardIdx) {
         try{
-            this.boardService.likeBoard(principal, boardIdx);
-            return new BaseResponse<>("해당 게시글에 하트를 눌렀습니다.");
+            String str = this.boardService.likeBoard(principal, boardIdx);
+            return new BaseResponse<>(str);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }

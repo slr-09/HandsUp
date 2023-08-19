@@ -287,7 +287,7 @@ public class BoardService {
         return getBoards;
     }
 
-    public void likeBoard(Principal principal, Long boardIdx) throws BaseException {
+    public String likeBoard(Principal principal, Long boardIdx) throws BaseException {
 
         Optional<Board> optionalBoard = boardRepository.findByBoardIdx(boardIdx);
 
@@ -312,6 +312,12 @@ public class BoardService {
         }
         User boardUser = optionalBoardUser.get();
 
+        Optional<BoardUser> checkAlreadyLike = boardUserRepository.findByUserIdxAndBoardIdxAndStatus(user, board, "LIKE");
+        if (checkAlreadyLike.isPresent()) {
+            boardUserRepository.delete(checkAlreadyLike.get());
+            return "좋아요를 취소하였습니다.";
+        }
+
         BoardUser likeEntity = BoardUser.builder()
                 .userIdx(user)
                 .boardIdx(board)
@@ -320,7 +326,7 @@ public class BoardService {
         Notification notificationEntity = Notification.builder()
                 .userIdx(boardUser)
                 .title(user.getNickname())
-                .body("채팅이 도착하였습니다.")
+                .body("회원님의 게시물에 누군가 하트를 눌렀습니다.")
                 .build();
 
         try {
@@ -345,7 +351,7 @@ public class BoardService {
                 throw new BaseException(BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR);
             }
         }
-
+        return "해당 게시글에 좋아요를 눌렀습니다.";
 
     }
     //내 게시물 조회 페이징

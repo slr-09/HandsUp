@@ -67,6 +67,11 @@ public class UserService {
     private final NotificationRepository notificationRepository;
 
     public void signupUser(UserDto.ReqSignUp user) throws BaseException {
+        Optional<User> emailCheck = userRepository.findByEmail(user.getEmail());
+        if (emailCheck.isPresent()) {
+            throw new BaseException(EXIST_USER);
+        }
+
         String password = user.getPassword();
         try{
             String encodedPwd = passwordEncoder.encode(user.getPassword());
