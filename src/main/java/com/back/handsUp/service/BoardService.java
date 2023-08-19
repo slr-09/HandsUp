@@ -204,8 +204,11 @@ public class BoardService {
         }
         User user = optionalUser.get();
 
-        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(school, "ACTIVE");
-//        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardUserByStatus("ACTIVE");
+        // 같은 학교의 게시물만 조회 시
+//        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(school, "ACTIVE");
+
+        // 학교 상관 없이 모든 게시물
+        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardUserByStatus("ACTIVE");
 
         List<BoardDto.BoardWithTag> getBoards = new ArrayList<>();
         List<Board> blockedBoard = new ArrayList<>();
@@ -247,12 +250,28 @@ public class BoardService {
                         tagName = null;
                     }else tagName = opTagName.get();
 
+                    //like 확인
+                    Optional<BoardUser> opBoard = boardUserRepository.findBoardUserByBoardIdxAndUserIdx(shownBoard, user);
+                    String didLike;
+                    if(opBoard.isEmpty()){
+                        didLike = "false";
+                    }else {
+                        BoardUser boardUserEntity = opBoard.get();
+                        didLike = boardUserEntity.getStatus();
+                    }
+                    //like 눌렀을 때만 true 반환
+                    if (Objects.equals(didLike, "LIKE")) {
+                        didLike = "true";
+                    }
 
                     BoardDto.BoardWithTag boardWithTag = BoardDto.BoardWithTag.builder()
                             .board(shownBoard)
                             .nickname(boardUser.getUserIdx().getNickname())
                             .character(characterInfo)
-                            .tag(tagName).build();
+                            .tag(tagName)
+                            .schoolName(boardUser.getUserIdx().getSchoolIdx().getName()) // todo : 초기 앱 런칭에만 삽입
+                            .didLike(didLike)
+                            .build();
 
                     getBoards.add(boardWithTag);
                 }
@@ -320,7 +339,7 @@ public class BoardService {
 
     }
     //내 게시물 조회 페이징
-    public BoardDto.MyBoard viewMyBoard(Principal principal, int page, int size) throws BaseException{
+    public BoardDto.MyBoard viewMyBoard(Principal principal, Pageable pageable) throws BaseException{
 
         Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if (optionalUser.isEmpty()) {
@@ -330,17 +349,16 @@ public class BoardService {
 
         Character character = user.getCharacter();
 
-        Pageable pageable = PageRequest.of(page,size);
-        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable).stream()
+        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable)
+                .stream()
                 .filter(board -> board.getStatus().equals("ACTIVE"))
                 .map(Board::toPreviewRes)
                 .collect(Collectors.toList());
 
-        BoardDto.MyBoard myBoard = BoardDto.MyBoard.builder().myBoardList(myBoardList)
-            .character(character)
-            .hasNext(myBoardList.size()>page*size)
-            .build();
-        return myBoard;
+        return BoardDto.MyBoard.builder()
+                .myBoardList(myBoardList)
+                .character(character)
+                .build();
     }
 
 
@@ -355,6 +373,7 @@ public class BoardService {
                 .indicateLocation(boardInfo.getIndicateLocation())
                 .latitude(boardInfo.getLatitude())
                 .longitude(boardInfo.getLongitude())
+                .location(boardInfo.getLocation())
                 .messageDuration(boardInfo.getMessageDuration())
                 .build();
         try{
@@ -441,7 +460,7 @@ public class BoardService {
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
         }
 
-        boardEntity.changeBoard(boardInfo.getContent(), boardInfo.getLatitude(), boardInfo.getLongitude(), boardInfo.getIndicateLocation(), boardInfo.getMessageDuration());
+        boardEntity.changeBoard(boardInfo.getContent(), boardInfo.getLatitude(), boardInfo.getLongitude(), boardInfo.getLocation(), boardInfo.getIndicateLocation(), boardInfo.getMessageDuration());
         try{
             this.boardRepository.save(boardEntity);
         } catch (Exception e) {

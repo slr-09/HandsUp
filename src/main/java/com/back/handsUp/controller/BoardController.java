@@ -7,6 +7,7 @@ import com.back.handsUp.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,11 +79,10 @@ public class BoardController {
     //     }
     // }
 
-    @GetMapping({"/myBoards/{page}/{size}", "/myBoards/{size}/"})
-    public BaseResponse<BoardDto.MyBoard> viewMyBoard(Principal principal, @PathVariable int size, @PathVariable(required = false) Integer page){
+    @GetMapping("/myBoards")
+    public BaseResponse<BoardDto.MyBoard> viewMyBoard(Principal principal, @PageableDefault(size = 20) Pageable pageable){
         try {
-            if(page==null) page =0;//page값이 안 들어오면 첫 페이지부터
-            BoardDto.MyBoard myBoards = boardService.viewMyBoard(principal, page, size);
+            BoardDto.MyBoard myBoards = boardService.viewMyBoard(principal, pageable);
             return new BaseResponse<>(myBoards);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());

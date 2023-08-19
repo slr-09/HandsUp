@@ -39,6 +39,8 @@ public class Board {
     @javax.persistence.Column(nullable = true)
     private double longitude;
 
+    @Column
+    private String location; // "광진구 화양동"과 같은 위치 대략적인 주소
 
     @javax.persistence.Column(nullable = false, length= 10)
     private String indicateLocation;
@@ -57,10 +59,11 @@ public class Board {
     private String status;
 
     @Builder
-    public Board(String content, double latitude, double longitude, String indicateLocation, int messageDuration, String status) {
+    public Board(String content, double latitude, double longitude, String location, String indicateLocation, int messageDuration, String status) {
         this.content = content;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.location = location;
         this.indicateLocation = indicateLocation;
         this.messageDuration = messageDuration;
         this.status = status;
@@ -73,13 +76,15 @@ public class Board {
                 .content(this.content)
                 .latitude(this.latitude)
                 .longitude(this.longitude)
+                .location(this.location)
                 .createdAt(this.createdAt)
                 .build();
     }
-    public void changeBoard(String content, double latitude, double longitude, String indicateLocation, int messageDuration) {
+    public void changeBoard(String content, double latitude, double longitude, String location, String indicateLocation, int messageDuration) {
         this.content = content;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.location = location;
         this.indicateLocation = indicateLocation;
         this.messageDuration = messageDuration;
     }
