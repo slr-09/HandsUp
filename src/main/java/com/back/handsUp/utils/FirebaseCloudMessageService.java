@@ -44,6 +44,7 @@ public class FirebaseCloudMessageService {
         OkHttpClient client = new OkHttpClient();
 
         RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
+
         Request request = new Request.Builder()
                 .url(API_URL).post(requestBody)
                 .addHeader(

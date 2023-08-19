@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
+import static com.back.handsUp.baseResponse.BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR;
 
 @Service
 @Slf4j
@@ -614,5 +615,14 @@ public class BoardService {
         PageRequest pageRequest = PageRequest.of(0, size); //페이지는 0으로 고정, 페이지에 표시되는 개수는 size로 결정
         return lastIdx == null? boardUserRepository.findAllByStatusAndBoardIdxInOrderByBoardUserIdxDesc("LIKE", boardList, pageRequest):
                 boardUserRepository.findByBoardUserIdxLessThanAndStatusAndBoardIdxInOrderByBoardUserIdxDesc(lastIdx, "LIKE", boardList, pageRequest);
+    }
+
+    public void testFcmToken(String fcmToken) throws BaseException {
+        try {
+            firebaseCloudMessageService.sendMessageTo(fcmToken, "TEST", "NOTIFICATION TEST");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(PUSH_NOTIFICATION_SEND_ERROR);
+        }
     }
 }
