@@ -4,6 +4,7 @@ import static com.back.handsUp.baseResponse.BaseResponseStatus.*;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.Notification;
 import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.domain.jwt.RefreshToken;
 import com.back.handsUp.domain.user.Character;
@@ -399,5 +400,11 @@ public class UserService {
         User user = optional.get();
 
         firebaseCloudMessageService.deleteToken(user);
+    }
+
+    public List<Notification> notificationList(Principal principal) throws BaseException {
+        User active = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE")
+                .orElseThrow(() -> new BaseException(NON_EXIST_USERIDX));
+        return null;
     }
 }

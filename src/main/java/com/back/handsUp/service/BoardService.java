@@ -372,6 +372,7 @@ public class BoardService {
                 .indicateLocation(boardInfo.getIndicateLocation())
                 .latitude(boardInfo.getLatitude())
                 .longitude(boardInfo.getLongitude())
+                .location(boardInfo.getLocation())
                 .messageDuration(boardInfo.getMessageDuration())
                 .build();
         try{

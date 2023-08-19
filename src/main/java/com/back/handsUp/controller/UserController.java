@@ -3,6 +3,7 @@ package com.back.handsUp.controller;
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.Notification;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.fcmToken.FcmTokenDto;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -193,6 +195,16 @@ public class UserController {
         try {
             this.userService.deleteFcmToken(principal);
             return new BaseResponse<>("FCM 토큰을 삭제하였습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @GetMapping("/notification")
+    public BaseResponse<List<Notification>> notificationList(Principal principal) {
+        try {
+            List<Notification> notifications = userService.notificationList(principal);
+            return new BaseResponse<>(notifications);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
