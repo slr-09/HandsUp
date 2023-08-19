@@ -347,39 +347,14 @@ public class BoardService {
         }
         User user = optionalUser.get();
 
-        log.info("user idx : {}", user.getUserIdx());
-
         Character character = user.getCharacter();
 
-        Page<Board> write = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", "ACTIVE", pageable);
-        log.info("my write list : {}", write);
 
-        List<Board> content = write.getContent();
-        log.info("my content list : {}", content);
-
-        List<BoardPreviewRes> myBoardList = content.stream()
+        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", "ACTIVE", pageable)
+                .stream()
                 .filter(board -> board.getStatus().equals("ACTIVE"))
                 .map(Board::toPreviewRes)
                 .collect(Collectors.toList());
-        log.info("my content list : {}", myBoardList);
-
-//        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable)
-//                .stream()
-//                .filter(board -> board.getStatus().equals("ACTIVE"))
-//                .map(Board::toPreviewRes)
-////                .map(boardUser -> boardUser.getBoardIdx().toPreviewRes())
-//                .collect(Collectors.toList());
-
-
-        for (BoardPreviewRes res : myBoardList){
-            log.info("my Board list getBoardIdx : {}", res.getBoardIdx());
-            log.info("my Board list getLongitude : {}", res.getLongitude());
-            log.info("my Board list getLatitude : {}", res.getLatitude());
-            log.info("my Board list getLocation : {}", res.getLocation());
-            log.info("my Board list getContent : {}", res.getContent());
-            log.info("my Board list getStatus : {}", res.getStatus());
-            log.info("-------------------------------------- ");
-        }
 
         return new BoardDto.MyBoard(character, myBoardList);
     }
