@@ -405,6 +405,8 @@ public class UserService {
     public List<Notification> notificationList(Principal principal) throws BaseException {
         User active = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE")
                 .orElseThrow(() -> new BaseException(NON_EXIST_USERIDX));
+
+
         return null;
     }
 }
