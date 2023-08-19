@@ -351,7 +351,7 @@ public class BoardService {
 
         Character character = user.getCharacter();
 
-        Page<Board> write = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable);
+        Page<Board> write = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", "ACTIVE", pageable);
         log.info("my write list : {}", write);
 
         List<Board> content = write.getContent();

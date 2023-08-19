@@ -40,8 +40,8 @@ public interface BoardUserRepository extends JpaRepository<BoardUser, Long> {
 
     Page<BoardUser> findAllByStatusAndBoardIdxInOrderByBoardUserIdxDesc(String status, List<Board> boardList, PageRequest pageRequest);
 
-    @Query("select b.boardIdx from BoardUser b where b.userIdx = ?1 and b.status = ?2")
-    Page<Board> findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(User userIdx, String status, Pageable pageable);
+    @Query("select bu.boardIdx from BoardUser bu inner join Board b  on b.boardIdx = bu.boardIdx.boardIdx where bu.userIdx = ?1 and bu.status = ?2 and b.status = ?3 ")
+    Page<Board> findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(User userIdx, String status, String boardStatus, Pageable pageable);
 
     Page<BoardUser> findByUserIdxAndStatus(User userIdx, String status, Pageable pageable);
 
