@@ -15,6 +15,7 @@ import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserCharacterDto;
 import com.back.handsUp.dto.user.UserDto;
+import com.back.handsUp.repository.NotificationRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.fcm.FcmTokenRepository;
 import com.back.handsUp.repository.user.CharacterRepository;
@@ -26,6 +27,7 @@ import com.back.handsUp.utils.Role;
 import com.back.handsUp.utils.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -60,6 +62,7 @@ public class UserService {
 
     private final FirebaseCloudMessageService firebaseCloudMessageService;
 
+    private final NotificationRepository notificationRepository;
 
     public void signupUser(UserDto.ReqSignUp user) throws BaseException {
         String password = user.getPassword();
@@ -402,11 +405,11 @@ public class UserService {
         firebaseCloudMessageService.deleteToken(user);
     }
 
-    public List<Notification> notificationList(Principal principal) throws BaseException {
-        User active = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE")
+    public List<Notification> notificationList(Principal principal, Pageable pageable) throws BaseException {
+        User user = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE")
                 .orElseThrow(() -> new BaseException(NON_EXIST_USERIDX));
 
-
-        return null;
+        List<Notification> byUserIdx = notificationRepository.findByUserIdx(user, pageable);
+        return byUserIdx;
     }
 }

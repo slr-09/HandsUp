@@ -14,6 +14,9 @@ import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.service.MailService;
 import com.back.handsUp.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -201,9 +204,11 @@ public class UserController {
     }
 
     @GetMapping("/notification")
-    public BaseResponse<List<Notification>> notificationList(Principal principal) {
+    public BaseResponse<List<Notification>> notificationList(Principal principal,
+                                                             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+                                                             Pageable pageable) {
         try {
-            List<Notification> notifications = userService.notificationList(principal);
+            List<Notification> notifications = userService.notificationList(principal, pageable);
             return new BaseResponse<>(notifications);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
