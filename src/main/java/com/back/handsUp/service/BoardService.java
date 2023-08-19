@@ -354,14 +354,22 @@ public class BoardService {
         Page<Board> write = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable);
         log.info("my write list : {}", write);
 
-        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable)
-                .stream()
+        List<Board> content = write.getContent();
+        log.info("my content list : {}", content);
+
+        List<BoardPreviewRes> myBoardList = content.stream()
                 .filter(board -> board.getStatus().equals("ACTIVE"))
                 .map(Board::toPreviewRes)
-//                .map(boardUser -> boardUser.getBoardIdx().toPreviewRes())
                 .collect(Collectors.toList());
+        log.info("my content list : {}", myBoardList);
 
-        log.info("my Board list : {}", myBoardList);
+//        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable)
+//                .stream()
+//                .filter(board -> board.getStatus().equals("ACTIVE"))
+//                .map(Board::toPreviewRes)
+////                .map(boardUser -> boardUser.getBoardIdx().toPreviewRes())
+//                .collect(Collectors.toList());
+
 
         for (BoardPreviewRes res : myBoardList){
             log.info("my Board list getBoardIdx : {}", res.getBoardIdx());
