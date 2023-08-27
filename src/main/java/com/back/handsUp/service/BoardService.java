@@ -2,6 +2,7 @@ package com.back.handsUp.service;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.Notification;
 import com.back.handsUp.domain.board.*;
 import com.back.handsUp.domain.fcmToken.FcmToken;
 import com.back.handsUp.domain.user.Character;
@@ -10,6 +11,7 @@ import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.board.BoardDto;
 import com.back.handsUp.dto.board.BoardPreviewRes;
 import com.back.handsUp.dto.user.CharacterDto;
+import com.back.handsUp.repository.NotificationRepository;
 import com.back.handsUp.repository.board.BoardRepository;
 import com.back.handsUp.repository.board.BoardTagRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
@@ -33,7 +35,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.back.handsUp.baseResponse.BaseResponseStatus.DATABASE_INSERT_ERROR;
+import static com.back.handsUp.baseResponse.BaseResponseStatus.*;
 
 @Service
 @Slf4j
@@ -49,6 +51,7 @@ public class BoardService {
     private final FcmTokenRepository fcmTokenRepository;
 
     private final SchoolRepository schoolRepository;
+    private final NotificationRepository notificationRepository;
 
 
     //단일 게시물 조회
@@ -204,8 +207,11 @@ public class BoardService {
         }
         User user = optionalUser.get();
 
-        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(school, "ACTIVE");
-//        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardUserByStatus("ACTIVE");
+        // 같은 학교의 게시물만 조회 시
+//        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardBySchoolAndStatus(school, "ACTIVE");
+
+        // 학교 상관 없이 모든 게시물
+        List<BoardUser> getSchoolBoards = boardUserRepository.findBoardUserByStatus("ACTIVE");
 
         List<BoardDto.BoardWithTag> getBoards = new ArrayList<>();
         List<Board> blockedBoard = new ArrayList<>();
@@ -247,13 +253,28 @@ public class BoardService {
                         tagName = null;
                     }else tagName = opTagName.get();
 
+                    //like 확인
+                    Optional<BoardUser> opBoard = boardUserRepository.findBoardUserByBoardIdxAndUserIdx(shownBoard, user);
+                    String didLike;
+                    if(opBoard.isEmpty()){
+                        didLike = "false";
+                    }else {
+                        BoardUser boardUserEntity = opBoard.get();
+                        didLike = boardUserEntity.getStatus();
+                    }
+                    //like 눌렀을 때만 true 반환
+                    if (Objects.equals(didLike, "LIKE")) {
+                        didLike = "true";
+                    }
 
                     BoardDto.BoardWithTag boardWithTag = BoardDto.BoardWithTag.builder()
                             .board(shownBoard)
                             .nickname(boardUser.getUserIdx().getNickname())
                             .character(characterInfo)
                             .tag(tagName)
-                            .schoolName(school.getName()).build();
+                            .schoolName(boardUser.getUserIdx().getSchoolIdx().getName()) // todo : 초기 앱 런칭에만 삽입
+                            .didLike(didLike)
+                            .build();
 
                     getBoards.add(boardWithTag);
                 }
@@ -266,7 +287,7 @@ public class BoardService {
         return getBoards;
     }
 
-    public void likeBoard(Principal principal, Long boardIdx) throws BaseException {
+    public String likeBoard(Principal principal, Long boardIdx) throws BaseException {
 
         Optional<Board> optionalBoard = boardRepository.findByBoardIdx(boardIdx);
 
@@ -291,13 +312,26 @@ public class BoardService {
         }
         User boardUser = optionalBoardUser.get();
 
+        Optional<BoardUser> checkAlreadyLike = boardUserRepository.findByUserIdxAndBoardIdxAndStatus(user, board, "LIKE");
+        if (checkAlreadyLike.isPresent()) {
+            boardUserRepository.delete(checkAlreadyLike.get());
+            return "좋아요를 취소하였습니다.";
+        }
+
         BoardUser likeEntity = BoardUser.builder()
                 .userIdx(user)
                 .boardIdx(board)
                 .status("LIKE").build();
 
+        Notification notificationEntity = Notification.builder()
+                .userIdx(boardUser)
+                .title(user.getNickname())
+                .body("회원님의 게시물에 누군가 하트를 눌렀습니다.")
+                .build();
+
         try {
             boardUserRepository.save(likeEntity);
+            notificationRepository.save(notificationEntity);
         } catch (Exception e) {
             throw new BaseException(DATABASE_INSERT_ERROR);
         }
@@ -314,14 +348,16 @@ public class BoardService {
             try {
                 firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), boardUser.getNickname(), "회원님의 핸즈업에 누군가 하트를 눌렀습니다.");
             } catch (Exception e) {
+                e.printStackTrace();
+                log.info("ERROR MESSAGE : {}", e.getMessage());
                 throw new BaseException(BaseResponseStatus.PUSH_NOTIFICATION_SEND_ERROR);
             }
         }
-
+        return "해당 게시글에 좋아요를 눌렀습니다.";
 
     }
     //내 게시물 조회 페이징
-    public BoardDto.MyBoard viewMyBoard(Principal principal, int page, int size) throws BaseException{
+    public BoardDto.MyBoard viewMyBoard(Principal principal, Pageable pageable) throws BaseException{
 
         Optional<User> optionalUser = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if (optionalUser.isEmpty()) {
@@ -331,16 +367,14 @@ public class BoardService {
 
         Character character = user.getCharacter();
 
-        Pageable pageable = PageRequest.of(page,size);
-        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", pageable).stream()
+
+        List<BoardPreviewRes> myBoardList = boardUserRepository.findBoardIdxByUserIdxAndStatusInOrderByBoardUserIdxDesc(user, "WRITE", "ACTIVE", pageable)
+                .stream()
+                .filter(board -> board.getStatus().equals("ACTIVE"))
                 .map(Board::toPreviewRes)
                 .collect(Collectors.toList());
 
-        BoardDto.MyBoard myBoard = BoardDto.MyBoard.builder().myBoardList(myBoardList)
-            .character(character)
-            .hasNext(myBoardList.size()>page*size)
-            .build();
-        return myBoard;
+        return new BoardDto.MyBoard(character, myBoardList);
     }
 
 
@@ -355,6 +389,7 @@ public class BoardService {
                 .indicateLocation(boardInfo.getIndicateLocation())
                 .latitude(boardInfo.getLatitude())
                 .longitude(boardInfo.getLongitude())
+                .location(boardInfo.getLocation())
                 .messageDuration(boardInfo.getMessageDuration())
                 .build();
         try{
@@ -441,7 +476,7 @@ public class BoardService {
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
         }
 
-        boardEntity.changeBoard(boardInfo.getContent(), boardInfo.getLatitude(), boardInfo.getLongitude(), boardInfo.getIndicateLocation(), boardInfo.getMessageDuration());
+        boardEntity.changeBoard(boardInfo.getContent(), boardInfo.getLatitude(), boardInfo.getLongitude(), boardInfo.getLocation(), boardInfo.getIndicateLocation(), boardInfo.getMessageDuration());
         try{
             this.boardRepository.save(boardEntity);
         } catch (Exception e) {
@@ -598,5 +633,22 @@ public class BoardService {
         PageRequest pageRequest = PageRequest.of(0, size); //페이지는 0으로 고정, 페이지에 표시되는 개수는 size로 결정
         return lastIdx == null? boardUserRepository.findAllByStatusAndBoardIdxInOrderByBoardUserIdxDesc("LIKE", boardList, pageRequest):
                 boardUserRepository.findByBoardUserIdxLessThanAndStatusAndBoardIdxInOrderByBoardUserIdxDesc(lastIdx, "LIKE", boardList, pageRequest);
+    }
+
+    public void testFcmToken(Principal principal, String fcmToken) throws BaseException {
+        User user = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE")
+                .orElseThrow(() -> new BaseException(NON_EXIST_USERIDX));
+        Notification notificationEntity = Notification.builder()
+                .userIdx(user)
+                .title("TEST")
+                .body("NOTIFICATION TEST")
+                .build();
+        try {
+            notificationRepository.save(notificationEntity);
+            firebaseCloudMessageService.sendMessageTo(fcmToken, "TEST", "NOTIFICATION TEST");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BaseException(PUSH_NOTIFICATION_SEND_ERROR);
+        }
     }
 }

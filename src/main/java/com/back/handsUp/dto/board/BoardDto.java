@@ -23,6 +23,7 @@ public class BoardDto {
         private String indicateLocation;
         private double latitude;
         private double longitude;
+        private String location;
         private String content;
         private String tag;
         private int messageDuration;
@@ -66,6 +67,7 @@ public class BoardDto {
         private CharacterDto.GetCharacterInfo character;
         private String tag;
         private String schoolName;
+        private String didLike;
     }
 
     @Getter
@@ -101,8 +103,6 @@ public class BoardDto {
     public static class MyBoard {
         private Character character;
         private List<BoardPreviewRes> myBoardList;
-        private boolean hasNext;
-
     }
 
     @Getter

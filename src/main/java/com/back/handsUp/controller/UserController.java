@@ -3,8 +3,10 @@ package com.back.handsUp.controller;
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponse;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.Notification;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
+import com.back.handsUp.dto.NotificationResponse;
 import com.back.handsUp.dto.fcmToken.FcmTokenDto;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
@@ -13,12 +15,16 @@ import com.back.handsUp.dto.user.UserDto;
 import com.back.handsUp.service.MailService;
 import com.back.handsUp.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -193,6 +199,20 @@ public class UserController {
         try {
             this.userService.deleteFcmToken(principal);
             return new BaseResponse<>("FCM 토큰을 삭제하였습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @GetMapping("/notification")
+    public BaseResponse<List<NotificationResponse>> notificationList(Principal principal,
+                                                             @PageableDefault(size = 20,
+                                                                     sort = "createdAt",
+                                                                     direction = Sort.Direction.DESC)
+                                                             Pageable pageable) {
+        try {
+            List<NotificationResponse> notifications = userService.notificationList(principal, pageable);
+            return new BaseResponse<>(notifications);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }

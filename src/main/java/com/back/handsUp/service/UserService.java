@@ -4,16 +4,19 @@ import static com.back.handsUp.baseResponse.BaseResponseStatus.*;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.Notification;
 import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.domain.jwt.RefreshToken;
 import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.School;
 import com.back.handsUp.domain.user.User;
+import com.back.handsUp.dto.NotificationResponse;
 import com.back.handsUp.dto.fcmToken.FcmTokenDto;
 import com.back.handsUp.dto.jwt.TokenDto;
 import com.back.handsUp.dto.user.CharacterDto;
 import com.back.handsUp.dto.user.UserCharacterDto;
 import com.back.handsUp.dto.user.UserDto;
+import com.back.handsUp.repository.NotificationRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.fcm.FcmTokenRepository;
 import com.back.handsUp.repository.user.CharacterRepository;
@@ -25,6 +28,7 @@ import com.back.handsUp.utils.Role;
 import com.back.handsUp.utils.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -39,6 +43,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -59,8 +64,14 @@ public class UserService {
 
     private final FirebaseCloudMessageService firebaseCloudMessageService;
 
+    private final NotificationRepository notificationRepository;
 
     public void signupUser(UserDto.ReqSignUp user) throws BaseException {
+        Optional<User> emailCheck = userRepository.findByEmail(user.getEmail());
+        if (emailCheck.isPresent()) {
+            throw new BaseException(EXIST_USER);
+        }
+
         String password = user.getPassword();
         try{
             String encodedPwd = passwordEncoder.encode(user.getPassword());
@@ -399,5 +410,16 @@ public class UserService {
         User user = optional.get();
 
         firebaseCloudMessageService.deleteToken(user);
+    }
+
+    public List<NotificationResponse> notificationList(Principal principal, Pageable pageable) throws BaseException {
+        User user = userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE")
+                .orElseThrow(() -> new BaseException(NON_EXIST_USERIDX));
+
+        log.info("ajfkjal");
+        List<Notification> byUserIdx = notificationRepository.findByUserIdx(user, pageable);
+        log.info("notification : {}", byUserIdx);
+        List<NotificationResponse> responseList = byUserIdx.stream().map(NotificationResponse::entityToDto).collect(Collectors.toList());
+        return responseList;
     }
 }

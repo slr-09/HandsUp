@@ -4,6 +4,7 @@ import static com.back.handsUp.baseResponse.BaseResponseStatus.*;
 
 import com.back.handsUp.baseResponse.BaseException;
 import com.back.handsUp.baseResponse.BaseResponseStatus;
+import com.back.handsUp.domain.Notification;
 import com.back.handsUp.domain.board.Board;
 import com.back.handsUp.domain.board.BoardUser;
 import com.back.handsUp.domain.chat.ChatRoom;
@@ -12,6 +13,7 @@ import com.back.handsUp.domain.user.Character;
 import com.back.handsUp.domain.user.User;
 import com.back.handsUp.dto.chat.ChatDto;
 import com.back.handsUp.dto.user.UserDto;
+import com.back.handsUp.repository.NotificationRepository;
 import com.back.handsUp.repository.board.BoardRepository;
 import com.back.handsUp.repository.board.BoardUserRepository;
 import com.back.handsUp.repository.chat.ChatRoomRepository;
@@ -46,26 +48,35 @@ public class ChatService {
     private final BoardService boardService;
     private final FcmTokenRepository fcmTokenRepository;
     private final FirebaseCloudMessageService firebaseCloudMessageService;
+
+    private final NotificationRepository notificationRepository;
     //채팅방 내 게시물 미리보기
-    public ChatDto.ResBoardPreview getPreViewBoard(Principal principal, String chatRoomKey) throws BaseException {
+    public ChatDto.ResBoardPreview getPreViewBoard(Principal principal, Long boardIdx) throws BaseException {
         Optional<User> optional = this.userRepository.findByEmailAndStatus(principal.getName(), "ACTIVE");
         if(optional.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_EMAIL);
         }
         User loginUser = optional.get();
 
-        Optional<ChatRoom> optional1 = this.chatRoomRepository.findChatRoomByChatRoomKey(chatRoomKey);
-        if(optional1.isEmpty()){
-            throw new BaseException(BaseResponseStatus.NON_EXIST_CHATROOMIDX);
+        Optional<Board> boardOptional = this.boardRepository.findByBoardIdx(boardIdx);
+        if(boardOptional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDIDX);
         }
-        ChatRoom chatRoom = optional1.get();
+        Board board = boardOptional.get();
 
-        if(loginUser.equals(chatRoom.getHostUserIdx()) || loginUser.equals(chatRoom.getSubUserIdx())){
-        } else {
-            throw new BaseException(BaseResponseStatus.NON_EXIST_CHATROOM_USER);
-        }
+//        Optional<ChatRoom> optional1 = this.chatRoomRepository.findChatRoomByChatRoomKey(chatRoomKey);
+//        Optional<ChatRoom> optional1 = this.chatRoomRepository.findChatRoomByBoardIdx(board);
+//        if(optional1.isEmpty()){
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_CHATROOMIDX);
+//        }
+//        ChatRoom chatRoom = optional1.get();
 
-        Optional<BoardUser> optional2 = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(chatRoom.getBoardIdx(), "WRITE")
+//        if(loginUser.equals(chatRoom.getHostUserIdx()) || loginUser.equals(chatRoom.getSubUserIdx())){
+//        } else {
+//            throw new BaseException(BaseResponseStatus.NON_EXIST_CHATROOM_USER);
+//        }
+
+        Optional<BoardUser> optional2 = this.boardUserRepository.findBoardUserByBoardIdxAndStatus(board, "WRITE")
                 .stream().findFirst();
         if(optional2.isEmpty()){
             throw new BaseException(BaseResponseStatus.NON_EXIST_BOARDUSERIDX);
@@ -73,8 +84,8 @@ public class ChatService {
         BoardUser boardUser = optional2.get();
 
         ChatDto.ResBoardPreview boardPreview = ChatDto.ResBoardPreview.builder()
-                .board(chatRoom.getBoardIdx())
-                .character(chatRoom.getHostUserIdx().getCharacter())
+                .board(board)
+                .character(loginUser.getCharacter())
                 .nickname(boardUser.getUserIdx().getNickname())
                 .build();
 
@@ -127,7 +138,13 @@ public class ChatService {
         }
         FcmToken fcmToken = optionalFcmToken.get();
 
+        Notification notificationEntity = Notification.builder()
+                .userIdx(you)
+                .title(me.getNickname())
+                .body("채팅이 도착하였습니다.")
+                .build();
         try {
+            notificationRepository.save(notificationEntity);
             firebaseCloudMessageService.sendMessageTo(fcmToken.getFcmToken(), me.getNickname(), "채팅이 도착하였습니다.");
             return "채팅 알림을 성공적으로 보냈습니다.";
         } catch (Exception e) {
